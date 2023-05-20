@@ -1,0 +1,68 @@
+GWAS-TOOLS(1)                  User Commands                  GWAS-TOOLS(1)
+
+NAME
+       gwas-tools - perform GWAS analysis on phenotypes and genotypes
+
+SYNOPSIS
+       gwas-tools [--pheno <phenotypes.csv>] [--geno <genotypes.vcf>]
+                  [--out <output_directory>] [--maf <min_maf>]
+                  [--count <sample_count>] [--help] [--version]
+
+DESCRIPTION
+       The gwas-tools command-line tool performs GWAS (Genome-Wide Association
+       Study) analysis on phenotypes and genotypes. It allows you to analyze
+       genetic associations and identify variants associated with traits of
+       interest.
+
+OPTIONS
+       --pheno, -p <phenotypes.csv>
+              Specify the CSV file containing phenotypes. The first column
+              must be sample ID and the second column must be numeric
+              phenotype measurements.
+
+       --geno, -g <genotypes.vcf>
+              Specify the VCF file containing genotypes.
+
+       --out, -o <output_directory>
+              Specify the output directory for storing the results.
+
+       --maf <min_maf>
+              (Optional) Specify the minimum minor allele frequency (between 0
+              and 1).
+
+       --count <sample_count>
+              (Optional) Specify the number of samples to include.
+
+       --help, -h
+              Display the help message.
+
+       --version
+              Display the version information.
+
+EXAMPLES
+       Perform GWAS analysis on phenotypes and genotypes:
+              gwas-tools --pheno phenotypes.csv --geno genotypes.vcf
+              --out .
+
+AUTHOR
+       Your Name
+
+REPORTING BUGS
+       Report bugs to: <email@example.com>
+
+COPYRIGHT
+       Copyright © 2023 Your Name.
+
+SEE ALSO
+       More information about GWAS can be found at the following link:
+       <https://en.wikipedia.org/wiki/Genome-wide_association_study>
+
+NOTES
+       This tool requires Python 3.10 and the following dependencies: ...
+
+BUGS
+       It's broken
+
+VERSION
+       gwas-tools version 1.0.0
+
