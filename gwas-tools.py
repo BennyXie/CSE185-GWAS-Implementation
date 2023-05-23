@@ -1,9 +1,8 @@
 import pandas as pd
 import numpy as np
 import csv
-import stats
 import argparse
-
+import scipy.stats as stats
 
 class InvalidFileFormatError(Exception):
     pass
@@ -14,7 +13,7 @@ class GenoPhenoMismatch(Exception):
 def read_geno(vcf_file: str):
     column_name = []
     mapping = {"0|0": 1, "1|0": 2, "0|1": 2, "1|1": 3}
-
+    np.linalg.eig()
     # TODO(Yifei Ding): need error handling for open file
     with open(vcf_file, 'r') as file:
         for line in file:
