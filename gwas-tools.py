@@ -107,6 +107,7 @@ def calc_stats(phenotypes: np.vstack, genotypes: np.vstack):
     return {"slopes": slopes, "intercepts": intercepts, "rvalues": r_values, "pvalues": p_values,
             "stderrs": std_errs}
 
+# Will be finished by Benny
 def filter_maf(geno: pd.DataFrame, maf: float):
     """
     Filter genotypes by minor allele frequency
@@ -116,6 +117,7 @@ def filter_maf(geno: pd.DataFrame, maf: float):
     """
     return geno
 
+# Will be finished by Benny
 def filter_count(geno: pd.DataFrame, count: int):
     """
     Filter genotypes by sample count
