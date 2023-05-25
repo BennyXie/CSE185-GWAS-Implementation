@@ -5,11 +5,14 @@ import scipy.stats as stats
 
 VERSION = "1.0.0"
 
+
 class InvalidFileFormatError(Exception):
     pass
 
+
 class GenoPhenoMismatch(Exception):
     pass
+
 
 def read_geno(vcf_file: str):
     """
@@ -40,7 +43,7 @@ def read_geno(vcf_file: str):
         raise InvalidFileFormatError("Invalid VCF file format")
 
     # map genotypes to numeric values 1,2,3
-    #TODO: need error handling for outside mapping genotype
+    # TODO: need error handling for outside mapping genotype
     for i in range(9, len(column_name)):
         vcf[column_name[i]] = vcf[column_name[i]].map(mapping)
     # TODO: may need to trim data
@@ -69,6 +72,7 @@ def read_pheno(pheno_file: str):
 
     return pheno
 
+
 def verify_geno_pheno(geno: pd.DataFrame, pheno: pd.DataFrame):
     """
     Verify that the genotype and phenotype files match in number of samples and sample IDs
@@ -79,8 +83,11 @@ def verify_geno_pheno(geno: pd.DataFrame, pheno: pd.DataFrame):
     # column mismatch
     if geno.shape[1] - 9 != pheno.shape[0]:
         raise GenoPhenoMismatch("Number of samples in genotype and phenotype files do not match")
-
+    for i in range(9, geno.shape[1]):
+        if geno.columns[i] != pheno.iloc[i - 9, 0]:
+            raise GenoPhenoMismatch("Sample IDs in genotype and phenotype files do not match")
     return True
+
 
 def generate_plot():
     return True
@@ -107,7 +114,6 @@ def calc_stats(phenotypes: np.vstack, genotypes: np.vstack):
     return {"slopes": slopes, "intercepts": intercepts, "rvalues": r_values, "pvalues": p_values,
             "stderrs": std_errs}
 
-# Will be finished by Benny
 def filter_maf(geno: pd.DataFrame, maf: float):
     """
     Filter genotypes by minor allele frequency
@@ -117,7 +123,6 @@ def filter_maf(geno: pd.DataFrame, maf: float):
     """
     return geno
 
-# Will be finished by Benny
 def filter_count(geno: pd.DataFrame, count: int):
     """
     Filter genotypes by sample count
@@ -127,6 +132,7 @@ def filter_count(geno: pd.DataFrame, count: int):
     """
 
     return geno
+
 
 def run_gwas(phenotypes: str, genotypes: str, out: str, maf=None, count=None):
     """
