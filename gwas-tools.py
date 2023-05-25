@@ -1,7 +1,10 @@
+from sqlite3 import DatabaseError
 import pandas as pd
 import numpy as np
 import argparse
 import scipy.stats as stats
+import matplotlib.pyplot as plt
+import sys
 
 VERSION = "1.0.0"
 
@@ -88,10 +91,36 @@ def verify_geno_pheno(geno: pd.DataFrame, pheno: pd.DataFrame):
             raise GenoPhenoMismatch("Sample IDs in genotype and phenotype files do not match")
     return True
 
+def generate_plot(data: pd.DataFrame):
+    """
+    Generate a QQ plot of the expected and observed -log10(p-values)
+    :param data: p-value data
+    """
+    if 'pvalues' not in data.columns:
+        raise ValueError("Input DataFrame should contain a 'pvalues' column.")
 
-def generate_plot():
-    return True
+    num_pvalues = len(data)
+    expected_neglogp = -np.log10(np.random.uniform(0,1,num_pvalues))
+    expected_neglogp= np.sort(expected_neglogp)
+    # Calculate observed -log10(p) values
+    observed_neglogp = -np.log10(data['pvalues'])
+    observed_neglogp= np.sort(observed_neglogp)
 
+    # Create a new DataFrame with observed and expected -log10(p) values- might have to generate expected values (?)
+    sorted_data = pd.DataFrame({'Expected -log10(p)': expected_neglogp,
+                         'Observed -log10(p)': observed_neglogp})
+
+    # Plot the expected vs observed -log10(p) values
+    plt.figure(figsize=(8, 6))
+    plt.scatter(sorted_data['Expected -log10(p)'], sorted_data['Observed -log10(p)'],
+                color='b', alpha=0.5)
+    plt.plot([min(sorted_data['Expected -log10(p)']), max(sorted_data['Expected -log10(p)'])],
+             [min(sorted_data['Observed -log10(p)']), max(sorted_data['Observed -log10(p)'])],
+             color='r', linestyle='--')
+    plt.xlabel('Expected -log10(p)')
+    plt.ylabel('Observed -log10(p)')
+    plt.title('GWAS QQ Plot')
+    plt.show()
 
 def generate_stats():
     return True
