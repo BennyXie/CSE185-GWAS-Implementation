@@ -32,6 +32,7 @@ def read_geno(vcf_file: str):
             if line.startswith(
                     '#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT'):
                 column_name = line.split('\t')
+                column_name[0] = column_name[0][1:]
                 break
 
     if len(column_name) == 0:
