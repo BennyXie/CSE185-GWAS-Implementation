@@ -2,7 +2,7 @@ from gwas_tools import *
 import argparse
 
 def main():
-    parser = argparse.ArgumentParser(prog='gwas-tools',
+    parser = argparse.ArgumentParser(prog='gwas-tools-cli',
                                      description='Perform GWAS analysis on phenotypes and genotypes.')
     parser.add_argument('--pheno', '-p', type=str, help='CSV file containing phenotypes. The first column must be \
         sample ID and the second column must be numeric phenotype measurements.', required=True)
