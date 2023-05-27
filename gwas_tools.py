@@ -1,3 +1,4 @@
+import numpy
 import pandas as pd
 import numpy as np
 import argparse
@@ -23,15 +24,23 @@ def read_geno(vcf_file: str):
     :return: genotype data with sample ID and numeric genotype values
     """
     column_name = []
-    mapping = {"0|0": 1, "1|0": 2, "0|1": 2, "1|1": 3}
-    np.linalg.eig()
+    mapping = {'0/0': numpy.int8(1),
+               '1/0': numpy.int8(2),
+               '0/1': numpy.int8(2),
+               '1/1': numpy.int8(3),
+               '0|0': numpy.int8(1),
+               '1|0': numpy.int8(2),
+               '0|1': numpy.int8(2),
+               '1|1': numpy.int8(3)
+               }
     # TODO(Yifei Ding): need error handling for open file
     with open(vcf_file, 'r') as file:
         for line in file:
             if line.startswith(
                     '#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT'):
                 column_name = line.split('\t')
-                column_name[0] = column_name[0][1:]
+                column_name[0] = column_name[0][1:]  # remove #
+                column_name[-1] = column_name[-1][:-1]  # remove \n
                 break
 
     if len(column_name) == 0:
@@ -92,6 +101,7 @@ def verify_geno_pheno(geno: pd.DataFrame, pheno: pd.DataFrame):
             raise GenoPhenoMismatch("Sample IDs in genotype and phenotype files do not match")
     return True
 
+
 def generate_qqplot(data: pd.DataFrame):
     """
     Generate a QQ plot of the expected and observed -log10(p-values)
@@ -101,15 +111,15 @@ def generate_qqplot(data: pd.DataFrame):
         raise ValueError("Input DataFrame should contain a 'pvalues' column.")
 
     num_pvalues = len(data)
-    expected_neglogp = -np.log10(np.random.uniform(0,1,num_pvalues))
-    expected_neglogp= np.sort(expected_neglogp)
+    expected_neglogp = -np.log10(np.random.uniform(0, 1, num_pvalues))
+    expected_neglogp = np.sort(expected_neglogp)
     # Calculate observed -log10(p) values
     observed_neglogp = -np.log10(data['pvalues'])
-    observed_neglogp= np.sort(observed_neglogp)
+    observed_neglogp = np.sort(observed_neglogp)
 
     # Create a new DataFrame with observed and expected -log10(p) values- might have to generate expected values (?)
     sorted_data = pd.DataFrame({'Expected -log10(p)': expected_neglogp,
-                         'Observed -log10(p)': observed_neglogp})
+                                'Observed -log10(p)': observed_neglogp})
 
     # Plot the expected vs observed -log10(p) values
     plt.figure(figsize=(8, 6))
@@ -122,6 +132,7 @@ def generate_qqplot(data: pd.DataFrame):
     plt.ylabel('Observed -log10(p)')
     plt.title('GWAS QQ Plot')
     plt.show()
+
 
 def generate_stats():
     return True
@@ -144,6 +155,7 @@ def calc_stats(phenotypes: np.vstack, genotypes: np.vstack):
     return {"slopes": slopes, "intercepts": intercepts, "rvalues": r_values, "pvalues": p_values,
             "stderrs": std_errs}
 
+
 def filter_maf(geno: pd.DataFrame, maf: float):
     """
     Filter genotypes by minor allele frequency
@@ -152,6 +164,7 @@ def filter_maf(geno: pd.DataFrame, maf: float):
     :return: genotype data with minor allele frequency greater than maf
     """
     return geno
+
 
 def filter_count(geno: pd.DataFrame, count: int):
     """
