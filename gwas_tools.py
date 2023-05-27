@@ -202,6 +202,17 @@ def filter_maf(geno: pd.DataFrame, maf: float):
     :param maf: minor allele frequency between 0 and 1
     :return: genotype data with minor allele frequency greater than maf
     """
+    # create a freq df which only contains the genotypes
+    freq = geno.drop(columns=geno.columns[0:9])
+    total_allele_count = len(freq.iloc[0]) * 2
+    
+    # determine which row to remove
+    for index, row in freq.iterrows():
+        minor_allele_count = 0
+        for i in row:
+            minor_allele_count += i - 1
+        if minor_allele_count / total_allele_count < maf:
+            geno = geno.drop(index)
     return geno
 
 

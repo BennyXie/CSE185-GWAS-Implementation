@@ -138,6 +138,19 @@ class TestReadPheno(unittest.TestCase):
                           'Phenotype': {0: 1, 1: 2, 2: 3}}
                          )
 
+class TestFilterMaf(unittest.TestCase):
+    def test_filter_maf(self):
+        # Reading in the vcf file to out
+        vcf_file = "./testfiles/vcf/multi_line_after_readin.vcf"
+        with open(vcf_file, 'r') as file:
+            column_names = file.readline().rstrip('\n').split("\t")
+        out = pd.read_csv(vcf_file, \
+            comment="#", sep="\t", names=column_names)
+        geno = filter_maf(out, 0.3).to_dict()
+        print(geno["B"])
+        expected = {0: 2, 3: 3}
+        print(expected)
+        self.assertEqual(geno['B'], expected)
 
 if __name__ == '__main__':
     unittest.main()
