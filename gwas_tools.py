@@ -131,6 +131,47 @@ def generate_qqplot(data: pd.DataFrame):
     plt.title('GWAS QQ Plot')
     plt.show()
 
+def generate_manhattanplot(data:pd.DataFrame, chromosome_data:pd.DataFrame):
+    """
+    Generate a Manhattan plot of the expected and observed -log10(p-values)
+    :param data: p-value data
+    :param chromosome_data: chromosome data
+    """
+    p_values = data['pvalue']
+    chromosome_data = chromosome_data['#CHROM']
+
+    # Calculate -log10(p) values
+    p_values = -np.log10(p_values)
+
+
+    sorted_indices = np.argsort(chromosome_data)
+    sorted_chromosome_data = np.array(chromosome_data)[sorted_indices]
+    sorted_p_values = np.array(p_values)[sorted_indices]
+
+    #unique_chromosomes = sorted_chromosome_data.unique()
+    colors={0: 'brown', 1:'red', 2:'orange', 3:'yellow', 4:'green', 5:'blue', 6:'purple', 7:'pink', 8: 'gray', 9: 'indigo'}
+
+    x_ticks = []
+    x_tick_labels = []
+    prev_chrom = None
+
+    for i, chrom in enumerate(sorted_chromosome_data):
+        if prev_chrom is None or chrom != prev_chrom:
+            x_ticks.append(i)
+            x_tick_labels.append(str(chrom))
+            prev_chrom = chrom
+        
+        plt.plot(i, sorted_p_values[i], 'o', color=colors.get(chrom%10, 'black'), alpha=0.5)
+
+    
+    plt.axhline(-np.log10(0.05), color='red', linestyle='--')
+    plt.xlabel('Chromosome')
+    plt.ylabel('-log10(p-value)')
+    plt.title('Manhattan Plot')
+    plt.xticks(x_ticks, x_tick_labels)
+    plt.show()
+
+
 
 def generate_stats():
     return True
