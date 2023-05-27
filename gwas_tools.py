@@ -49,6 +49,7 @@ def read_geno(vcf_file: str):
     # TODO: need error handling for outside mapping genotype
     for i in range(9, len(column_name)):
         vcf[column_name[i]] = vcf[column_name[i]].map(mapping)
+    vcf[column_name[1]] = vcf[column_name[1]].astype(int)
     # TODO: may need to trim data
     return vcf
 
