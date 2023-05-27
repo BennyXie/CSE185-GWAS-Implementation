@@ -33,7 +33,6 @@ def read_geno(vcf_file: str):
                '0|1': numpy.int8(2),
                '1|1': numpy.int8(3)
                }
-    # TODO(Yifei Ding): need error handling for open file
     with open(vcf_file, 'r') as file:
         for line in file:
             if line.startswith(
@@ -55,7 +54,6 @@ def read_geno(vcf_file: str):
         raise InvalidFileFormatError("Invalid VCF file format")
 
     # map genotypes to numeric values 1,2,3
-    # TODO: need error handling for outside mapping genotype
     for i in range(9, len(column_name)):
         vcf[column_name[i]] = vcf[column_name[i]].map(mapping)
     vcf[column_name[1]] = vcf[column_name[1]].astype(int)
@@ -66,7 +64,7 @@ def read_geno(vcf_file: str):
 def read_pheno(pheno_file: str):
     """
     Read phenotype file
-    :param pheno_file: phenotype file
+    :param pheno_file: phenotype file path
     :return: phenotype data with sample ID and float phenotype measurements
     """
 
@@ -185,11 +183,16 @@ def run_gwas(phenotypes: str, genotypes: str, out: str, maf=None, count=None):
     :param out: output directory
     :param maf: minor allele frequency between 0 and 1
     :param count: minimum sample count
-    :return: TODO
+    :return: vcf data and statistics of linear regression
     """
+    # read genotype file
+    geno = read_geno(genotypes)
+    # read phenotype file
+    pheno = read_pheno(phenotypes)
+    ## TODO: filter and generate graphs
+    stats = calc_stats(pheno, geno)
 
-    print("run gwas")
-
+    return geno, stats
 
 if __name__ == '__main__':
     print("run gwas-tools-cli from command line")

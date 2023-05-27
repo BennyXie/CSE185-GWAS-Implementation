@@ -1,5 +1,6 @@
 from gwas_tools import *
 import argparse
+import os
 
 def main():
     parser = argparse.ArgumentParser(prog='gwas-tools-cli',
@@ -17,7 +18,15 @@ def main():
     args = parser.parse_args()
     if args.pheno == '-h' or args.geno == '-h' or args.out == '-h':
         parser.print_help()
+    elif not os.path.isfile(args.geno) or not os.path.isfile(args.pheno):
+        print("Invalid file path.")
+        parser.print_help()
+    elif not os.path.isdir(args.out):
+        print("Invalid output directory.")
+        parser.print_help()
     else:
+
         run_gwas(args.pheno, args.geno, args.out, args.maf, args.count)
+
 if __name__ == '__main__':
     main()
