@@ -15,27 +15,20 @@ pip install .
 ## Usage
 
 ```bash
-Usage: gwas-tools --pheno <phenotypes.csv> --geno <genotypes.vcf> --out <output_directory> [--maf <min_maf>] [--count <sample_count>] [--help] [--version]
-
-gwas-tools(version 0.0.1) by ___________ 
-
+usage: gwas-tools-cli [-h] --pheno PHENO --geno GENO --out OUT [--maf MAF]
+                      [--count COUNT] [--version]
 Perform GWAS analysis on phenotypes and genotypes.
+options:
+  -h, --help            show this help message and exit
+  --pheno PHENO, -p PHENO
+                        CSV file containing phenotypes. The first column must
+                        be sample ID and the second column must be numeric
+                        phenotype measurements.
+  --geno GENO, -g GENO  VCF file containing genotypes
+  --out OUT, -o OUT     Output directory for results
+  --maf MAF             Minimum minor allele frequency (between 0 and 1)
+  --count COUNT         Number of samples to include
+  --version             show program's version number and exit
+Process finished with exit code 0
 
-Required parameters:
-  --pheno, -p <phenotypes.csv>       CSV file containing phenotypes.
-                                     The first column must be sample ID and the
-                                     second column must be numeric phenotype
-                                     measurements.
-  --geno, -g <genotypes.vcf>         VCF file containing genotypes
-  --out, -o <output_directory>       Output directory for results
-
-Optional parameters:
-  --maf <min_maf>                    Minimum minor allele frequency (between 0 and 1)
-  --count <sample_count>             Number of samples to include
-
-Other options:
-  --help, -h                         Show this help message and exit
-  --version                          Show version information
-
-Note: Required parameters must be provided.
 ```
