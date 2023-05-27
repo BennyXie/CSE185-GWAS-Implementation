@@ -103,9 +103,24 @@ class TestReadGeno(unittest.TestCase):
                           'FILTER': {0: '.', 1: '.', 2: '.'},
                           'INFO': {0: '.', 1: '.', 2: '.'},
                           'FORMAT': {0: 'GT', 1: 'GT', 2: 'GT'},
-                          'A': {0: 1, 1:3, 2: 2},
-                          'B': {0: 1, 1:3, 2: 2},
-                          'C': {0: 1, 1:3, 2: 2}}
+                          'A': {0: 1, 1: 3, 2: 2},
+                          'B': {0: 1, 1: 3, 2: 2},
+                          'C': {0: 1, 1: 3, 2: 2}}
                          )
+
+
+class TestReadPheno(unittest.TestCase):
+    def test_read_pheno(self):
+        out = read_pheno("./testfiles/pheno/test.phen")
+        out_dict = out.to_dict()
+
+        self.assertIsInstance(out['Phenotype'][0], numpy.float64)
+
+        self.assertEqual(out_dict,
+                         {'ID': {0: 1, 1: 2, 2: 3},
+                          'Phenotype': {0: 1, 1: 2, 2: 3}}
+                         )
+
+
 if __name__ == '__main__':
     unittest.main()
