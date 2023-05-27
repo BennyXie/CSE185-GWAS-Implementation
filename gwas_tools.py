@@ -223,7 +223,16 @@ def filter_count(geno: pd.DataFrame, count: int):
     :param count: count of samples
     :return: genotype data with sample count greater than count
     """
-
+    # create a freq df which only contains the genotypes
+    freq = geno.drop(columns=geno.columns[0:9])
+    
+    # determine which row to remove
+    for index, row in freq.iterrows():
+        minor_allele_count = 0
+        for i in row:
+            minor_allele_count += i - 1
+        if minor_allele_count < count:
+            geno = geno.drop(index)
     return geno
 
 
