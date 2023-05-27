@@ -7,7 +7,6 @@ import numpy as np
 
 
 class TestPlots(unittest.TestCase):
-    """
     def test_generate_qqplot_uniform(self):
         data = pd.DataFrame({
             'pvalues': np.random.uniform(0, 1, 1000)
@@ -45,7 +44,6 @@ class TestPlots(unittest.TestCase):
 
         # Assert that no errors occurred during the plot generation
         self.assertTrue(True)
-        """
     def test_generate_manhattanplot(self):
         # Create example DataFrame for p-values
         p_values_data = pd.DataFrame({
@@ -64,7 +62,7 @@ class TestPlots(unittest.TestCase):
         self.assertTrue(True)
 
 
-"""
+
 class TestReadGeno(unittest.TestCase):
     def test_read_vcf_single_id(self):
         out = read_geno("./testfiles/vcf/single_id.vcf")
@@ -139,7 +137,7 @@ class TestReadPheno(unittest.TestCase):
                          {'ID': {0: 1, 1: 2, 2: 3},
                           'Phenotype': {0: 1, 1: 2, 2: 3}}
                          )
-"""
+
 
 if __name__ == '__main__':
     unittest.main()
