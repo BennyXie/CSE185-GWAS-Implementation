@@ -102,7 +102,7 @@ def verify_geno_pheno(geno: pd.DataFrame, pheno: pd.DataFrame):
     return True
 
 
-def generate_qqplot(data: pd.DataFrame):
+def generate_qqplot(data: pd.DataFrame, out: str):
     """
     Generate a QQ plot of the expected and observed -log10(p-values)
     :param data: p-value data
@@ -133,7 +133,8 @@ def generate_qqplot(data: pd.DataFrame):
     plt.title('GWAS QQ Plot')
     plt.show()
 
-def generate_manhattanplot(data:pd.DataFrame, chromosome_data:pd.DataFrame):
+
+def generate_manhattanplot(data: pd.DataFrame, chromosome_data: pd.DataFrame, out: str):
     """
     Generate a Manhattan plot of the expected and observed -log10(p-values)
     :param data: p-value data
