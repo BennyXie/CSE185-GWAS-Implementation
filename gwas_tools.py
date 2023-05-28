@@ -137,6 +137,10 @@ def generate_manhattanplot(data:pd.DataFrame, chromosome_data:pd.DataFrame):
     :param data: p-value data
     :param chromosome_data: chromosome data
     """
+    if 'pvalues' not in data.columns:
+        raise ValueError("Input DataFrame should contain a 'pvalues' column.")
+    if '#CHROM' not in chromosome_data.columns:
+        raise ValueError("Input DataFrame should contain a '#CHROM' column.")
     p_values = data['pvalue']
     chromosome_data = chromosome_data['#CHROM']
 
