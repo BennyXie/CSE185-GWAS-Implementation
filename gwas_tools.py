@@ -102,7 +102,7 @@ def verify_geno_pheno(geno: pd.DataFrame, pheno: pd.DataFrame):
     return True
 
 
-def generate_qqplot(data: pd.DataFrame, out: str):
+def generate_qqplot(data: pd.DataFrame, out: str = None):
     """
     Generate a QQ plot of the expected and observed -log10(p-values)
     :param data: p-value data
@@ -131,10 +131,13 @@ def generate_qqplot(data: pd.DataFrame, out: str):
     plt.xlabel('Expected -log10(p)')
     plt.ylabel('Observed -log10(p)')
     plt.title('GWAS QQ Plot')
-    plt.show()
+    if out is not None:
+        plt.savefig(out)
+    else:
+        plt.show()
 
 
-def generate_manhattanplot(data: pd.DataFrame, chromosome_data: pd.DataFrame, out: str):
+def generate_manhattanplot(data: pd.DataFrame, chromosome_data: pd.DataFrame, out: str=None):
     """
     Generate a Manhattan plot of the expected and observed -log10(p-values)
     :param data: p-value data
@@ -175,7 +178,10 @@ def generate_manhattanplot(data: pd.DataFrame, chromosome_data: pd.DataFrame, ou
     plt.ylabel('-log10(p-value)')
     plt.title('Manhattan Plot')
     plt.xticks(x_ticks, x_tick_labels)
-    plt.show()
+    if out is not None:
+        plt.savefig(out)
+    else:
+        plt.show()
 
 
 def write_stats(genotypes_with_stats: pd.DataFrame, output_folder: str):
