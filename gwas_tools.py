@@ -209,7 +209,7 @@ def filter_maf(geno: pd.DataFrame, maf: float):
     # create a freq df which only contains the genotypes
     freq = geno.drop(columns=geno.columns[0:9])
     total_allele_count = len(freq.iloc[0]) * 2
-    
+
     # determine which row to remove
     # for index, row in freq.iterrows():
     #     minor_allele_count = 0
@@ -217,7 +217,7 @@ def filter_maf(geno: pd.DataFrame, maf: float):
     #         minor_allele_count += i - 1
     #     if minor_allele_count / total_allele_count < maf:
     #         geno = geno.drop(index)
-    
+
     # for index, row in freq.iterrows():
     #     value_counts = row.apply(pd.Series.value_counts)
     #     hetero = value_counts[2].sum()
@@ -226,7 +226,7 @@ def filter_maf(geno: pd.DataFrame, maf: float):
     #     print(minor_allele_count)
     #     if minor_allele_count / total_allele_count < maf:
     #         geno = geno.drop(index)
-            
+
     for index, row in freq.iterrows():
         value_counts = row.value_counts().to_dict()
         minor_allele_count = 0
@@ -234,7 +234,7 @@ def filter_maf(geno: pd.DataFrame, maf: float):
             minor_allele_count += (type - 1) * allele_count
         if minor_allele_count / total_allele_count < maf:
             geno = geno.drop(index)
-    
+
     return geno
 
 
@@ -247,7 +247,7 @@ def filter_count(geno: pd.DataFrame, count: int):
     """
     # create a freq df which only contains the genotypes
     freq = geno.drop(columns=geno.columns[0:9])
-    
+
     # determine which row to remove
     # for index, row in freq.iterrows():
     #     minor_allele_count = 0
@@ -255,7 +255,7 @@ def filter_count(geno: pd.DataFrame, count: int):
     #         minor_allele_count += i - 1
     #     if minor_allele_count < count:
     #         geno = geno.drop(index)
-    
+
     for index, row in freq.iterrows():
         value_counts = row.value_counts().to_dict()
         minor_allele_count = 0
@@ -264,11 +264,11 @@ def filter_count(geno: pd.DataFrame, count: int):
         if minor_allele_count < count:
             geno = geno.drop(index)
     print(geno)
-    
+
     return geno
 
 
-def run_gwas(phenotypes: str, genotypes: str, out: str, maf=None, count=None):
+def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str, maf=None, count=None):
     """
     Run GWAS analysis on phenotypes and genotypes
     :param phenotypes: phenotype file
@@ -278,14 +278,20 @@ def run_gwas(phenotypes: str, genotypes: str, out: str, maf=None, count=None):
     :param count: minimum sample count
     :return: vcf data and statistics of linear regression
     """
-    # read genotype file
-    geno = read_geno(genotypes)
-    # read phenotype file
-    pheno = read_pheno(phenotypes)
-    ## TODO: filter and generate graphs
-    stats = calc_stats(pheno, geno)
 
-    return geno, stats
+    if maf is not None:
+        genotypes = filter_maf(genotypes, maf)
+    if count is not None:
+        genotypes = filter_count(genotypes, count)
+    # calculate statistics
+    geno_with_stats = calc_stats(phenotypes, genotypes)
+    # write statistics to file
+    write_stats(geno_with_stats, out)
+    # plot manhattan plot
+    generate_manhattanplot(geno_with_stats, out)
+    # plot qq plot
+    generate_qqplot(geno_with_stats, out)
+    return geno_with_stats
 
 if __name__ == '__main__':
     print("run gwas-tools-cli from command line")
