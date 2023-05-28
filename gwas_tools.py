@@ -179,13 +179,18 @@ def generate_manhattanplot(data: pd.DataFrame, chromosome_data: pd.DataFrame, ou
     plt.show()
 
 
+def write_stats(genotypes_with_stats: pd.DataFrame, output_folder: str):
+    output_df = pd.DataFrame({
+        "CHROM": genotypes_with_stats["CHROM"],
+        "ID": genotypes_with_stats["ID"],
+        "SLOPE": genotypes_with_stats["SLOPE"],
+        "INTERCEPT": genotypes_with_stats["INTERCEPT"],
+        "RVALUE": genotypes_with_stats["RVALUE"],
+        "PVALUE": genotypes_with_stats["PVALUE"],
+        "STDERR": genotypes_with_stats["STDERR"]
+    })
 
-def generate_stats():
-    return True
-
-
-def write_stats():
-    return True
+    output_df.to_csv(output_folder + "stats.csv", sep="\t", index=False)
 
 
 def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame):
