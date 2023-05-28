@@ -57,7 +57,6 @@ def read_geno(vcf_file: str):
     for i in range(9, len(column_name)):
         vcf[column_name[i]] = vcf[column_name[i]].map(mapping)
     vcf[column_name[1]] = vcf[column_name[1]].astype(int)
-    # TODO: may need to trim data
     return vcf
 
 
@@ -78,8 +77,11 @@ def read_pheno(pheno_file: str):
     if pheno.shape[0] == 0:
         InvalidFileFormatError("Invalid phenotype file format")
 
-    # TODO: need error handling for non-numeric phenotype
-    pheno[column_name[1]] = pheno[column_name[1]].astype(float)
+    try:
+        pheno[column_name[1]] = pheno[column_name[1]].astype(float)
+    except ValueError as e:
+        raise InvalidFileFormatError("Invalid phenotype file format, "
+                                     "only numerical phenotypes are accepted.", str(e))
 
     return pheno
 
