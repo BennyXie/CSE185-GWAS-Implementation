@@ -47,12 +47,12 @@ class TestPlots(unittest.TestCase):
     def test_generate_manhattanplot(self):
         # Create example DataFrame for p-values
         p_values_data = pd.DataFrame({
-            'pvalue': np.random.uniform(0,1,1000)
+            'pvalues': np.random.uniform(0,1,1000)
         })
 
         # Create example DataFrame for chromosome data
         chromosome_data = pd.DataFrame({
-            '#CHROM': np.random.randint(1, 10, size=1000)
+            'CHROM': np.random.randint(1, 10, size=1000)
         })
 
         # Call the generate_plot function
@@ -64,12 +64,12 @@ class TestPlots(unittest.TestCase):
     def test_generate_manhattanplot_morechromo(self):
         # Create example DataFrame for p-values
         p_values_data = pd.DataFrame({
-            'pvalue': np.random.uniform(0,1,1000)
+            'pvalues': np.random.uniform(0,1,1000)
         })
 
         # Create example DataFrame for chromosome data
         chromosome_data = pd.DataFrame({
-            '#CHROM': np.random.randint(1, 20, size=1000)
+            'CHROM': np.random.randint(1, 20, size=1000)
         })
 
         # Call the generate_plot function
@@ -81,12 +81,12 @@ class TestPlots(unittest.TestCase):
     def test_generate_manhattanplot_biggersize(self):
         # Create example DataFrame for p-values
         p_values_data = pd.DataFrame({
-            'pvalue': np.random.uniform(0,1,10000)
+            'pvalues': np.random.uniform(0,1,10000)
         })
 
         # Create example DataFrame for chromosome data
         chromosome_data = pd.DataFrame({
-            '#CHROM': np.random.randint(1, 8, size=10000)
+            'CHROM': np.random.randint(1, 8, size=10000)
         })
 
         # Call the generate_plot function
