@@ -185,18 +185,29 @@ def write_stats():
     return True
 
 
-def calc_stats(phenotypes: np.vstack, genotypes: np.vstack):
-    ## TODO: Use dataframe instead of vstack
+def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame):
     """
     Calculate statistics for GWAS
 
     :param phenotypes: phenotype data
     :param genotypes: genotype data
-    :return: statistics of linear regression
+    :return: dataframe with genotypes and statistics
     """
-    slopes, intercepts, r_values, p_values, std_errs = stats.linregress(genotypes, phenotypes)
-    return {"slopes": slopes, "intercepts": intercepts, "rvalues": r_values, "pvalues": p_values,
-            "stderrs": std_errs}
+    # create a copy of the genotypes dataframe to store the genotypes with statistics
+    genotypes_with_stats = genotypes.copy()
+
+    # iterate through the genotypes
+    for i in range(9, genotypes.shape[1]):
+        # calculate the statistics
+        slopes, intercepts, r_values, p_values, std_errs = stats.linregress(genotypes.iloc[:, i], phenotypes.iloc[:, 1])
+        # add the statistics as columns to the genotypes dataframe
+        genotypes_with_stats["SLOPE"] = slopes
+        genotypes_with_stats["INTERCEPT"] = intercepts
+        genotypes_with_stats["RVALUES"] = r_values
+        genotypes_with_stats["PVALUES"] = p_values
+        genotypes_with_stats["STDERRS"] = std_errs
+
+    return genotypes_with_stats
 
 
 def filter_maf(geno: pd.DataFrame, maf: float):
