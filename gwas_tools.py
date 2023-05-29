@@ -292,7 +292,7 @@ def filter_count(geno: pd.DataFrame, count: int):
     return geno
 
 
-def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str, maf=None, count=None):
+def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None, maf=None, count=None):
     """
     Run GWAS analysis on phenotypes and genotypes
     :param phenotypes: phenotype file
@@ -310,7 +310,8 @@ def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str, maf=No
     # calculate statistics
     geno_with_stats = calc_stats(phenotypes, genotypes)
     # write statistics to file
-    write_stats(geno_with_stats, out)
+    if out is not None:
+        write_stats(geno_with_stats, out)
     # plot manhattan plot
     generate_manhattanplot(geno_with_stats, out)
     # plot qq plot
