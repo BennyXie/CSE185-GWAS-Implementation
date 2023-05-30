@@ -34,6 +34,9 @@ def main():
         #Patch output directory
         if args.out[-1] != '/' and args.out[-1] != '\\':
             args.out += '/'
+        # create output directory if it doesn't exist
+        if not os.path.exists(args.out):
+            os.makedirs(args.out)
 
         # run GWAS
         gwas_stats = run_gwas(pheno, geno, args.out, args.maf, args.count)
