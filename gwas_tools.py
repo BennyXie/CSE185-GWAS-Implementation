@@ -234,28 +234,13 @@ def filter_maf(geno: pd.DataFrame, maf: float):
     freq = geno.drop(columns=geno.columns[0:9])
     total_allele_count = len(freq.iloc[0]) * 2
 
-    # determine which row to remove
-    # for index, row in freq.iterrows():
-    #     minor_allele_count = 0
-    #     for i in row:
-    #         minor_allele_count += i - 1
-    #     if minor_allele_count / total_allele_count < maf:
-    #         geno = geno.drop(index)
-
-    # for index, row in freq.iterrows():
-    #     value_counts = row.apply(pd.Series.value_counts)
-    #     hetero = value_counts[2].sum()
-    #     homo_alternate = value_counts[3].sum()
-    #     minor_allele_count = hetero + homo_alternate * 2
-    #     print(minor_allele_count)
-    #     if minor_allele_count / total_allele_count < maf:
-    #         geno = geno.drop(index)
-
     for index, row in freq.iterrows():
         value_counts = row.value_counts().to_dict()
         minor_allele_count = 0
+        # counting maf
         for type, allele_count in value_counts.items():
             minor_allele_count += (type - 1) * allele_count
+        # dropping the rows that has too few maf
         if minor_allele_count / total_allele_count < maf:
             geno = geno.drop(index)
 
@@ -271,20 +256,14 @@ def filter_count(geno: pd.DataFrame, count: int):
     """
     # create a freq df which only contains the genotypes
     freq = geno.drop(columns=geno.columns[0:9])
-
-    # determine which row to remove
-    # for index, row in freq.iterrows():
-    #     minor_allele_count = 0
-    #     for i in row:
-    #         minor_allele_count += i - 1
-    #     if minor_allele_count < count:
-    #         geno = geno.drop(index)
-
+    
     for index, row in freq.iterrows():
         value_counts = row.value_counts().to_dict()
         minor_allele_count = 0
+        # counting maf
         for type, allele_count in value_counts.items():
             minor_allele_count += (type - 1) * allele_count
+        # dropping the rows that has too few maf
         if minor_allele_count < count:
             geno = geno.drop(index)
     print(geno)
