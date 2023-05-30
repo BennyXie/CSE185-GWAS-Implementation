@@ -67,7 +67,7 @@ def read_pheno(pheno_file: str):
     :return: phenotype data with sample ID and float phenotype measurements
     """
 
-    column_name = ["ID", "Phenotype"]
+    column_name = ["ID", "PHENO"]
 
     try:
         pheno: pd.DataFrame = pd.read_csv(pheno_file, sep="\t", names=column_name)
@@ -215,17 +215,17 @@ def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame):
     """
     # create a copy of the genotypes dataframe to store the genotypes with statistics
     genotypes_with_stats = genotypes.copy()
-
-    # iterate through the genotypes
-    for i in range(9, genotypes.shape[1]):
-        # calculate the statistics
-        slopes, intercepts, r_values, p_values, std_errs = stats.linregress(genotypes.iloc[:, i], phenotypes.iloc[:, 1])
+    phenotype_col = phenotypes["PHENO"]
+    # calculate the statistics
+    for i,row in genotypes.iterrows():
+        row = row.drop(["CHROM", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT"])
+        slopes, intercepts, r_values, p_values, std_errs = stats.linregress(row, phenotype_col)
         # add the statistics as columns to the genotypes dataframe
-        genotypes_with_stats["SLOPE"] = slopes
-        genotypes_with_stats["INTERCEPT"] = intercepts
-        genotypes_with_stats["RVALUES"] = r_values
-        genotypes_with_stats["PVALUES"] = p_values
-        genotypes_with_stats["STDERRS"] = std_errs
+        genotypes_with_stats["SLOPE"][i] = slopes
+        genotypes_with_stats["INTERCEPT"][i] = intercepts
+        genotypes_with_stats["RVALUES"][i] = r_values
+        genotypes_with_stats["PVALUES"][i] = p_values
+        genotypes_with_stats["STDERRS"][i] = std_errs
 
     return genotypes_with_stats
 
@@ -317,7 +317,7 @@ def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None,
     if mac is not None:
         genotypes = filter_mac(genotypes, mac)
     # calculate statistics
-    geno_with_stats = calc_stats(phenotypes, genotypes)
+    geno_with_stats = calc_stats(genotypes, phenotypes)
     # write statistics to file
     if out is not None:
         write_stats(geno_with_stats, out)

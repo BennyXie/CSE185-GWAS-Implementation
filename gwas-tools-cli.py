@@ -14,7 +14,7 @@ def main():
                         help='Minimum minor allele frequency (between 0 and 1)')
     parser.add_argument('--mac', type=int, help='Minimum of minor allele count of a genotype')
     parser.add_argument('--version', action='version', version='gwas-tools ' + VERSION)
-
+    parser.add_argument('--debug', action='store_true', help='Print debug messages')
     args = parser.parse_args()
     if args.pheno == '-h' or args.geno == '-h' or args.out == '-h':
         parser.print_help()
@@ -49,10 +49,13 @@ def main():
 
 
         # run GWAS
+        if args.debug:
+            run_gwas(pheno, geno, args.out, args.maf, args.mac)
+            return
         try:
             run_gwas(pheno, geno, args.out, args.maf, args.mac)
         except ValueError:
-            print("Invalid maf or mac value.")
+            print("Invalid maf or mac value.") #TODO: This may ignore some errors and print incorrect message
             parser.print_help()
             return
 

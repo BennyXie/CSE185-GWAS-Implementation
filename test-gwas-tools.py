@@ -156,7 +156,7 @@ class TestReadPheno(unittest.TestCase):
 
         self.assertEqual(out_dict,
                          {'ID': {0: 1, 1: 2, 2: 3},
-                          'Phenotype': {0: 1, 1: 2, 2: 3}}
+                          'PHENO': {0: 1, 1: 2, 2: 3}}
                          )
 
 class TestFilterMaf(unittest.TestCase):
