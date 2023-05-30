@@ -107,14 +107,14 @@ def generate_qqplot(data: pd.DataFrame, out: str = None):
     Generate a QQ plot of the expected and observed -log10(p-values)
     :param data: p-value data
     """
-    if 'pvalues' not in data.columns:
+    if 'PVALUE' not in data.columns:
         raise ValueError("Input DataFrame should contain a 'pvalues' column.")
 
     num_pvalues = len(data)
     expected_neglogp = -np.log10(np.random.uniform(0, 1, num_pvalues))
     expected_neglogp = np.sort(expected_neglogp)
     # Calculate observed -log10(p) values
-    observed_neglogp = -np.log10(data['pvalues'])
+    observed_neglogp = -np.log10(data['PVALUE'])
     observed_neglogp = np.sort(observed_neglogp)
 
     # Create a new DataFrame with observed and expected -log10(p) values- might have to generate expected values (?)
@@ -137,18 +137,18 @@ def generate_qqplot(data: pd.DataFrame, out: str = None):
         plt.show()
 
 
-def generate_manhattanplot(data: pd.DataFrame, chromosome_data: pd.DataFrame, out: str=None):
+def generate_manhattan_plot(geno_with_stats: pd.DataFrame, out=None):
     """
     Generate a Manhattan plot of the expected and observed -log10(p-values)
-    :param data: p-value data
+    :param statistics: p-value data
     :param chromosome_data: chromosome data
     """
-    if 'pvalues' not in data.columns:
-        raise ValueError("Input DataFrame should contain a 'pvalues' column.")
-    if 'CHROM' not in chromosome_data.columns:
+    if 'PVALUE' not in geno_with_stats.columns:
+        raise ValueError("Input DataFrame should contain a 'PVALUE' column.")
+    if 'CHROM' not in geno_with_stats.columns:
         raise ValueError("Input DataFrame should contain a '#CHROM' column.")
-    p_values = data['pvalues']
-    chromosome_data = chromosome_data['CHROM']
+    p_values = geno_with_stats['PVALUE']
+    chromosome_data = geno_with_stats['CHROM']
 
     # Calculate -log10(p) values
     p_values = -np.log10(p_values)
@@ -185,6 +185,13 @@ def generate_manhattanplot(data: pd.DataFrame, chromosome_data: pd.DataFrame, ou
 
 
 def write_stats(genotypes_with_stats: pd.DataFrame, output_folder: str):
+    """
+    Write a stats.csv file containing the statistics
+
+    :param genotypes_with_stats: dataframe containing genotypes and statistics
+    :param output_folder: output folder
+    :return: true if successful
+    """
     output_df = pd.DataFrame({
         "CHROM": genotypes_with_stats["CHROM"],
         "ID": genotypes_with_stats["ID"],
@@ -287,8 +294,6 @@ def filter_count(geno: pd.DataFrame, count: int):
             minor_allele_count += (type - 1) * allele_count
         if minor_allele_count < count:
             geno = geno.drop(index)
-    print(geno)
-
     return geno
 
 
@@ -313,7 +318,7 @@ def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None,
     if out is not None:
         write_stats(geno_with_stats, out)
     # plot manhattan plot
-    generate_manhattanplot(geno_with_stats, out)
+    generate_manhattan_plot(geno_with_stats, out)
     # plot qq plot
     generate_qqplot(geno_with_stats, out)
     return geno_with_stats
