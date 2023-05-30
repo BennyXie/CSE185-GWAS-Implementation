@@ -30,6 +30,11 @@ def main():
         geno = read_geno(args.geno)
         # read phenotype file
         pheno = read_pheno(args.pheno)
+
+        #Patch output directory
+        if args.out[-1] != '/' and args.out[-1] != '\\':
+            args.out += '/'
+
         # run GWAS
         gwas_stats = run_gwas(pheno, geno, args.out, args.maf, args.count)
 
