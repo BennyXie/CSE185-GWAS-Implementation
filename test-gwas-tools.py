@@ -152,11 +152,10 @@ class TestReadPheno(unittest.TestCase):
         out = read_pheno("./testfiles/pheno/test.phen")
         out_dict = out.to_dict()
 
-        self.assertIsInstance(out['Phenotype'][0], numpy.float64)
+        self.assertIsInstance(out['a']['PHENO'], float)
 
         self.assertEqual(out_dict,
-                         {'ID': {0: 1, 1: 2, 2: 3},
-                          'PHENO': {0: 1, 1: 2, 2: 3}}
+                         {'a':{'ID':'a', 'PHENO': 1.0}, 'b':{'ID':'b', 'PHENO': 2.0}, 'c':{'ID':'c', 'PHENO': 3.0}}
                          )
 
 class TestFilterMaf(unittest.TestCase):

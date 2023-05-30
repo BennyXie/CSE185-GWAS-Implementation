@@ -1,8 +1,7 @@
 import numpy
 import pandas as pd
 import numpy as np
-import argparse
-import scipy.stats as stats
+import statsmodels.api as sm
 import matplotlib.pyplot as plt
 
 VERSION = "1.0.0"
@@ -83,7 +82,9 @@ def read_pheno(pheno_file: str):
         raise InvalidFileFormatError("Invalid phenotype file format, "
                                      "only numerical phenotypes are accepted.", str(e))
 
-    return pheno
+    transpose = pheno.transpose()
+    transpose.columns = transpose.iloc[0]
+    return transpose
 
 
 def verify_geno_pheno(geno: pd.DataFrame, pheno: pd.DataFrame):
@@ -215,18 +216,33 @@ def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame):
     """
     # create a copy of the genotypes dataframe to store the genotypes with statistics
     genotypes_with_stats = genotypes.copy()
-    phenotype_col = phenotypes["PHENO"]
+    common_columns = list(set(genotypes.columns) & set(phenotypes.columns))
+    genotypes_matched = genotypes[common_columns]
+    phenotypes_matched = phenotypes[common_columns]
+    slopes = []
+    intercepts = []
+    rvalues = []
+    pvalues = []
+    stderrs = []
     # calculate the statistics
-    for i,row in genotypes.iterrows():
-        row = row.drop(["CHROM", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT"])
-        slopes, intercepts, r_values, p_values, std_errs = stats.linregress(row, phenotype_col)
+    for i, row in genotypes_matched.iterrows():
+        y = phenotypes_matched.iloc[1].to_numpy()
+        x = row.to_numpy()
+        X = sm.add_constant(x)
+        model = sm.OLS(y, X)
+        results = model.fit()
         # add the statistics as columns to the genotypes dataframe
-        genotypes_with_stats["SLOPE"][i] = slopes
-        genotypes_with_stats["INTERCEPT"][i] = intercepts
-        genotypes_with_stats["RVALUES"][i] = r_values
-        genotypes_with_stats["PVALUES"][i] = p_values
-        genotypes_with_stats["STDERRS"][i] = std_errs
+        slopes.append(results.params[1])
+        intercepts.append(results.params[0])
+        rvalues.append(results.rsquared)
+        pvalues.append(results.f_pvalue)
+        stderrs.append(results.bse[0])
 
+    genotypes_with_stats['SLOPE'] = pd.Series(slopes)
+    genotypes_with_stats['INTERCEPT'] = pd.Series(intercepts)
+    genotypes_with_stats['RVALUE'] = pd.Series(rvalues)
+    genotypes_with_stats['PVALUE'] = pd.Series(pvalues)
+    genotypes_with_stats['STDERR'] = pd.Series(stderrs)
     return genotypes_with_stats
 
 
@@ -301,9 +317,9 @@ def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None,
     if out is not None:
         write_stats(geno_with_stats, out)
     # plot manhattan plot
-    generate_manhattan_plot(geno_with_stats, out)
+    generate_manhattan_plot(geno_with_stats, out+"manhattan.png")
     # plot qq plot
-    generate_qqplot(geno_with_stats, out)
+    generate_qqplot(geno_with_stats, out+"qqplot.png")
     return geno_with_stats
 
 if __name__ == '__main__':
