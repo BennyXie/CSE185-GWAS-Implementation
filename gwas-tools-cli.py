@@ -13,7 +13,7 @@ def main():
     parser.add_argument('--out', '-o', type=str, help='Output directory for results', required=True)
     parser.add_argument('--maf', type=float,
                         help='Minimum minor allele frequency (between 0 and 1)')
-    parser.add_argument('--count', type=int, help='Number of samples to include')
+    parser.add_argument('--mac', type=int, help='Minimum of minor allele count of a genotype')
     parser.add_argument('--version', action='version', version='gwas-tools ' + VERSION)
 
     args = parser.parse_args()
@@ -39,7 +39,7 @@ def main():
             os.makedirs(args.out)
 
         # run GWAS
-        gwas_stats = run_gwas(pheno, geno, args.out, args.maf, args.count)
+        gwas_stats = run_gwas(pheno, geno, args.out, args.maf, args.mac)
 
 
 

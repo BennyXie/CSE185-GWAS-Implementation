@@ -237,6 +237,8 @@ def filter_maf(geno: pd.DataFrame, maf: float):
     :param maf: minor allele frequency between 0 and 1
     :return: genotype data with minor allele frequency greater than maf
     """
+    if maf < 0 or maf > 1:
+        raise ValueError("maf must be between 0 and 1")
     # create a freq df which only contains the genotypes
     freq = geno.drop(columns=geno.columns[0:9])
     total_allele_count = len(freq.iloc[0]) * 2
@@ -269,13 +271,15 @@ def filter_maf(geno: pd.DataFrame, maf: float):
     return geno
 
 
-def filter_count(geno: pd.DataFrame, count: int):
+def filter_mac(geno: pd.DataFrame, mac: int):
     """
     Filter genotypes by sample count
     :param geno: genotype data
-    :param count: count of samples
-    :return: genotype data with sample count greater than count
+    :param mac: count of minor alleles
+    :return: genotype data with minor alleles occuring at least 'mac' times.
     """
+    if mac < 0:
+        raise ValueError("mac filter only accepts positive number of minor alleles")
     # create a freq df which only contains the genotypes
     freq = geno.drop(columns=geno.columns[0:9])
 
@@ -292,26 +296,26 @@ def filter_count(geno: pd.DataFrame, count: int):
         minor_allele_count = 0
         for type, allele_count in value_counts.items():
             minor_allele_count += (type - 1) * allele_count
-        if minor_allele_count < count:
+        if minor_allele_count < mac:
             geno = geno.drop(index)
     return geno
 
 
-def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None, maf=None, count=None):
+def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None, maf=None, mac=None):
     """
     Run GWAS analysis on phenotypes and genotypes
     :param phenotypes: phenotype file
     :param genotypes: genotype file
     :param out: output directory
     :param maf: minor allele frequency between 0 and 1
-    :param count: minimum sample count
+    :param mac: minimum sample count
     :return: vcf data and statistics of linear regression
     """
 
     if maf is not None:
         genotypes = filter_maf(genotypes, maf)
-    if count is not None:
-        genotypes = filter_count(genotypes, count)
+    if mac is not None:
+        genotypes = filter_mac(genotypes, mac)
     # calculate statistics
     geno_with_stats = calc_stats(phenotypes, genotypes)
     # write statistics to file

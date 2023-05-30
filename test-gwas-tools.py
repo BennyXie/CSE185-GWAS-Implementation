@@ -1,6 +1,5 @@
 import os.path
 import unittest
-
 import numpy
 import pandas as pd
 from gwas_tools import *
@@ -182,7 +181,7 @@ class TestFilterCount(unittest.TestCase):
         out = pd.read_csv(vcf_file, \
             comment="#", sep="\t", names=column_names)
         
-        geno = filter_count(out, 2).to_dict()
+        geno = filter_mac(out, 2).to_dict()
         # The expected output
         expected = {0: 1, 1 : 2, 3: 4, 4: 5}
         self.assertEqual(geno["POS"], expected)

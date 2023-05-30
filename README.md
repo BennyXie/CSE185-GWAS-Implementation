@@ -16,7 +16,7 @@ pip install .
 
 ```bash
 usage: gwas-tools-cli [-h] --pheno PHENO --geno GENO --out OUT [--maf MAF]
-                      [--count COUNT] [--version]
+                      [--mac MAC] [--version]
 Perform GWAS analysis on phenotypes and genotypes.
 options:
   -h, --help            show this help message and exit
@@ -27,8 +27,7 @@ options:
   --geno GENO, -g GENO  VCF file containing genotypes
   --out OUT, -o OUT     Output directory for results
   --maf MAF             Minimum minor allele frequency (between 0 and 1)
-  --count COUNT         Number of samples to include
+  --mac MAC             Minimum of minor allele count of a genotype
   --version             show program's version number and exit
-Process finished with exit code 0
 
 ```
