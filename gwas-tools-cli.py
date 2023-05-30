@@ -2,7 +2,6 @@ from gwas_tools import *
 import argparse
 import os
 
-
 def main():
     parser = argparse.ArgumentParser(prog='gwas-tools-cli',
                                      description='Perform GWAS analysis on phenotypes and genotypes.')
@@ -13,9 +12,9 @@ def main():
     parser.add_argument('--out', '-o', type=str, help='Output directory for results', required=True)
     parser.add_argument('--maf', type=float,
                         help='Minimum minor allele frequency (between 0 and 1)')
-    parser.add_argument('--count', type=int, help='Number of samples to include')
+    parser.add_argument('--mac', type=int, help='Minimum of minor allele count of a genotype')
     parser.add_argument('--version', action='version', version='gwas-tools ' + VERSION)
-
+    parser.add_argument('--debug', action='store_true', help='Print debug messages')
     args = parser.parse_args()
     if args.pheno == '-h' or args.geno == '-h' or args.out == '-h':
         parser.print_help()
@@ -26,13 +25,39 @@ def main():
         print("Invalid output directory.")
         parser.print_help()
     else:
-        # read genotype file
-        geno = read_geno(args.geno)
-        # read phenotype file
-        pheno = read_pheno(args.pheno)
-        # run GWAS
-        gwas_stats = run_gwas(pheno, geno, args.out, args.maf, args.count)
+        #Patch output directory
+        if args.out[-1] != '/' and args.out[-1] != '\\':
+            args.out += '/'
+        # create output directory if it doesn't exist
+        if not os.path.exists(args.out):
+            os.makedirs(args.out)
 
+        # read genotype file
+        try :
+            geno = read_geno(args.geno)
+        except InvalidFileFormatError:
+            print("Invalid genotype file.")
+            parser.print_help()
+            return
+        # read phenotype file
+        try:
+            pheno = read_pheno(args.pheno)
+        except InvalidFileFormatError:
+            print("Invalid phenotype file.")
+            parser.print_help()
+            return
+
+
+        # run GWAS
+        if args.debug:
+            run_gwas(pheno, geno, args.out, args.maf, args.mac)
+            return
+        try:
+            run_gwas(pheno, geno, args.out, args.maf, args.mac)
+        except ValueError:
+            print("Invalid maf or mac value.") #TODO: This may ignore some errors and print incorrect message
+            parser.print_help()
+            return
 
 
 if __name__ == '__main__':

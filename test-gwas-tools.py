@@ -1,5 +1,5 @@
+import os.path
 import unittest
-
 import numpy
 import pandas as pd
 from gwas_tools import *
@@ -9,7 +9,7 @@ import numpy as np
 class TestPlots(unittest.TestCase):
     def test_generate_qqplot_uniform(self):
         data = pd.DataFrame({
-            'pvalues': np.random.uniform(0, 1, 1000)
+            'PVALUE': np.random.uniform(0, 1, 1000)
         })
 
         # Call the generate_plot function
@@ -20,7 +20,7 @@ class TestPlots(unittest.TestCase):
 
     def test_generate_qqplot_exponential(self):
         data = pd.DataFrame({
-            'pvalues': np.random.exponential(scale=1, size=1000)
+            'PVALUE': np.random.exponential(scale=1, size=1000)
         })
 
         # Call the generate_plot function
@@ -36,7 +36,7 @@ class TestPlots(unittest.TestCase):
         x = np.linspace(1, 10, 100)
         coefficients = [2, 3, -5, 10]
         data = pd.DataFrame({
-            'pvalues': np.polyval(coefficients, x)
+            'PVALUE': np.polyval(coefficients, x)
         })
 
         # Call the generate_plot function
@@ -44,53 +44,40 @@ class TestPlots(unittest.TestCase):
 
         # Assert that no errors occurred during the plot generation
         self.assertTrue(True)
-    def test_generate_manhattanplot(self):
-        # Create example DataFrame for p-values
-        p_values_data = pd.DataFrame({
-            'pvalues': np.random.uniform(0,1,1000)
-        })
-
-        # Create example DataFrame for chromosome data
-        chromosome_data = pd.DataFrame({
-            'CHROM': np.random.randint(1, 10, size=1000)
+    def test_generate_manhattan_plot(self):
+        # Create example DataFrame
+        data = pd.DataFrame({
+            'CHROM': np.random.randint(1, 10, size=1000), 'PVALUE': np.random.uniform(0,1,1000)
         })
 
         # Call the generate_plot function
-        generate_manhattanplot(p_values_data,chromosome_data)
+        generate_manhattan_plot(data, "./test_temp/manhattan_plot.png")
 
         # Check if a plot is created
-        self.assertTrue(True)
+        self.assertTrue(os.path.isfile("./test_temp/manhattan_plot.png"))
 
     def test_generate_manhattanplot_morechromo(self):
-        # Create example DataFrame for p-values
-        p_values_data = pd.DataFrame({
-            'pvalues': np.random.uniform(0,1,1000)
-        })
-
-        # Create example DataFrame for chromosome data
-        chromosome_data = pd.DataFrame({
+        # Create example DataFrame
+        data = pd.DataFrame({
+            'PVALUE': np.random.uniform(0,1,1000),
             'CHROM': np.random.randint(1, 20, size=1000)
         })
 
         # Call the generate_plot function
-        generate_manhattanplot(p_values_data,chromosome_data)
+        generate_manhattan_plot(data)
 
         # Check if a plot is created
         self.assertTrue(True)
     
-    def test_generate_manhattanplot_biggersize(self):
+    def test_generate_manhattanplot_bigger_size(self):
         # Create example DataFrame for p-values
-        p_values_data = pd.DataFrame({
-            'pvalues': np.random.uniform(0,1,10000)
-        })
-
-        # Create example DataFrame for chromosome data
-        chromosome_data = pd.DataFrame({
+        data = pd.DataFrame({
+            'PVALUE': np.random.uniform(0,1,10000),
             'CHROM': np.random.randint(1, 8, size=10000)
         })
 
         # Call the generate_plot function
-        generate_manhattanplot(p_values_data,chromosome_data)
+        generate_manhattan_plot(data)
 
         # Check if a plot is created
         self.assertTrue(True)
@@ -169,7 +156,7 @@ class TestReadPheno(unittest.TestCase):
 
         self.assertEqual(out_dict,
                          {'ID': {0: 1, 1: 2, 2: 3},
-                          'Phenotype': {0: 1, 1: 2, 2: 3}}
+                          'PHENO': {0: 1, 1: 2, 2: 3}}
                          )
 
 class TestFilterMaf(unittest.TestCase):
@@ -194,7 +181,7 @@ class TestFilterCount(unittest.TestCase):
         out = pd.read_csv(vcf_file, \
             comment="#", sep="\t", names=column_names)
         
-        geno = filter_count(out, 2).to_dict()
+        geno = filter_mac(out, 2).to_dict()
         # The expected output
         expected = {0: 1, 1 : 2, 3: 4, 4: 5}
         self.assertEqual(geno["POS"], expected)

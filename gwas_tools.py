@@ -67,7 +67,7 @@ def read_pheno(pheno_file: str):
     :return: phenotype data with sample ID and float phenotype measurements
     """
 
-    column_name = ["ID", "Phenotype"]
+    column_name = ["ID", "PHENO"]
 
     try:
         pheno: pd.DataFrame = pd.read_csv(pheno_file, sep="\t", names=column_name)
@@ -107,14 +107,14 @@ def generate_qqplot(data: pd.DataFrame, out: str = None):
     Generate a QQ plot of the expected and observed -log10(p-values)
     :param data: p-value data
     """
-    if 'pvalues' not in data.columns:
+    if 'PVALUE' not in data.columns:
         raise ValueError("Input DataFrame should contain a 'pvalues' column.")
 
     num_pvalues = len(data)
     expected_neglogp = -np.log10(np.random.uniform(0, 1, num_pvalues))
     expected_neglogp = np.sort(expected_neglogp)
     # Calculate observed -log10(p) values
-    observed_neglogp = -np.log10(data['pvalues'])
+    observed_neglogp = -np.log10(data['PVALUE'])
     observed_neglogp = np.sort(observed_neglogp)
 
     # Create a new DataFrame with observed and expected -log10(p) values- might have to generate expected values (?)
@@ -137,18 +137,18 @@ def generate_qqplot(data: pd.DataFrame, out: str = None):
         plt.show()
 
 
-def generate_manhattanplot(data: pd.DataFrame, chromosome_data: pd.DataFrame, out: str=None):
+def generate_manhattan_plot(geno_with_stats: pd.DataFrame, out=None):
     """
     Generate a Manhattan plot of the expected and observed -log10(p-values)
-    :param data: p-value data
+    :param statistics: p-value data
     :param chromosome_data: chromosome data
     """
-    if 'pvalues' not in data.columns:
-        raise ValueError("Input DataFrame should contain a 'pvalues' column.")
-    if 'CHROM' not in chromosome_data.columns:
+    if 'PVALUE' not in geno_with_stats.columns:
+        raise ValueError("Input DataFrame should contain a 'PVALUE' column.")
+    if 'CHROM' not in geno_with_stats.columns:
         raise ValueError("Input DataFrame should contain a '#CHROM' column.")
-    p_values = data['pvalues']
-    chromosome_data = chromosome_data['CHROM']
+    p_values = geno_with_stats['PVALUE']
+    chromosome_data = geno_with_stats['CHROM']
 
     # Calculate -log10(p) values
     p_values = -np.log10(p_values)
@@ -185,6 +185,13 @@ def generate_manhattanplot(data: pd.DataFrame, chromosome_data: pd.DataFrame, ou
 
 
 def write_stats(genotypes_with_stats: pd.DataFrame, output_folder: str):
+    """
+    Write a stats.csv file containing the statistics
+
+    :param genotypes_with_stats: dataframe containing genotypes and statistics
+    :param output_folder: output folder
+    :return: true if successful
+    """
     output_df = pd.DataFrame({
         "CHROM": genotypes_with_stats["CHROM"],
         "ID": genotypes_with_stats["ID"],
@@ -208,17 +215,17 @@ def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame):
     """
     # create a copy of the genotypes dataframe to store the genotypes with statistics
     genotypes_with_stats = genotypes.copy()
-
-    # iterate through the genotypes
-    for i in range(9, genotypes.shape[1]):
-        # calculate the statistics
-        slopes, intercepts, r_values, p_values, std_errs = stats.linregress(genotypes.iloc[:, i], phenotypes.iloc[:, 1])
+    phenotype_col = phenotypes["PHENO"]
+    # calculate the statistics
+    for i,row in genotypes.iterrows():
+        row = row.drop(["CHROM", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT"])
+        slopes, intercepts, r_values, p_values, std_errs = stats.linregress(row, phenotype_col)
         # add the statistics as columns to the genotypes dataframe
-        genotypes_with_stats["SLOPE"] = slopes
-        genotypes_with_stats["INTERCEPT"] = intercepts
-        genotypes_with_stats["RVALUES"] = r_values
-        genotypes_with_stats["PVALUES"] = p_values
-        genotypes_with_stats["STDERRS"] = std_errs
+        genotypes_with_stats["SLOPE"][i] = slopes
+        genotypes_with_stats["INTERCEPT"][i] = intercepts
+        genotypes_with_stats["RVALUES"][i] = r_values
+        genotypes_with_stats["PVALUES"][i] = p_values
+        genotypes_with_stats["STDERRS"][i] = std_errs
 
     return genotypes_with_stats
 
@@ -230,6 +237,8 @@ def filter_maf(geno: pd.DataFrame, maf: float):
     :param maf: minor allele frequency between 0 and 1
     :return: genotype data with minor allele frequency greater than maf
     """
+    if maf < 0 or maf > 1:
+        raise ValueError("maf must be between 0 and 1")
     # create a freq df which only contains the genotypes
     freq = geno.drop(columns=geno.columns[0:9])
     total_allele_count = len(freq.iloc[0]) * 2
@@ -247,13 +256,15 @@ def filter_maf(geno: pd.DataFrame, maf: float):
     return geno
 
 
-def filter_count(geno: pd.DataFrame, count: int):
+def filter_mac(geno: pd.DataFrame, mac: int):
     """
     Filter genotypes by sample count
     :param geno: genotype data
-    :param count: count of samples
-    :return: genotype data with sample count greater than count
+    :param mac: count of minor alleles
+    :return: genotype data with minor alleles occuring at least 'mac' times.
     """
+    if mac < 0:
+        raise ValueError("mac filter only accepts positive number of minor alleles")
     # create a freq df which only contains the genotypes
     freq = geno.drop(columns=geno.columns[0:9])
     
@@ -264,34 +275,33 @@ def filter_count(geno: pd.DataFrame, count: int):
         for type, allele_count in value_counts.items():
             minor_allele_count += (type - 1) * allele_count
         # dropping the rows that has too few maf
-        if minor_allele_count < count:
+        if minor_allele_count < mac:
             geno = geno.drop(index)
-    print(geno)
-
     return geno
 
 
-def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str, maf=None, count=None):
+def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None, maf=None, mac=None):
     """
     Run GWAS analysis on phenotypes and genotypes
     :param phenotypes: phenotype file
     :param genotypes: genotype file
     :param out: output directory
     :param maf: minor allele frequency between 0 and 1
-    :param count: minimum sample count
+    :param mac: minimum sample count
     :return: vcf data and statistics of linear regression
     """
 
     if maf is not None:
         genotypes = filter_maf(genotypes, maf)
-    if count is not None:
-        genotypes = filter_count(genotypes, count)
+    if mac is not None:
+        genotypes = filter_mac(genotypes, mac)
     # calculate statistics
-    geno_with_stats = calc_stats(phenotypes, genotypes)
+    geno_with_stats = calc_stats(genotypes, phenotypes)
     # write statistics to file
-    write_stats(geno_with_stats, out)
+    if out is not None:
+        write_stats(geno_with_stats, out)
     # plot manhattan plot
-    generate_manhattanplot(geno_with_stats, out)
+    generate_manhattan_plot(geno_with_stats, out)
     # plot qq plot
     generate_qqplot(geno_with_stats, out)
     return geno_with_stats
