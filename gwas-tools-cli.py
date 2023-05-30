@@ -2,7 +2,6 @@ from gwas_tools import *
 import argparse
 import os
 
-
 def main():
     parser = argparse.ArgumentParser(prog='gwas-tools-cli',
                                      description='Perform GWAS analysis on phenotypes and genotypes.')
@@ -26,11 +25,6 @@ def main():
         print("Invalid output directory.")
         parser.print_help()
     else:
-        # read genotype file
-        geno = read_geno(args.geno)
-        # read phenotype file
-        pheno = read_pheno(args.pheno)
-
         #Patch output directory
         if args.out[-1] != '/' and args.out[-1] != '\\':
             args.out += '/'
@@ -38,9 +32,29 @@ def main():
         if not os.path.exists(args.out):
             os.makedirs(args.out)
 
-        # run GWAS
-        gwas_stats = run_gwas(pheno, geno, args.out, args.maf, args.mac)
+        # read genotype file
+        try :
+            geno = read_geno(args.geno)
+        except InvalidFileFormatError:
+            print("Invalid genotype file.")
+            parser.print_help()
+            return
+        # read phenotype file
+        try:
+            pheno = read_pheno(args.pheno)
+        except InvalidFileFormatError:
+            print("Invalid phenotype file.")
+            parser.print_help()
+            return
 
+
+        # run GWAS
+        try:
+            run_gwas(pheno, geno, args.out, args.maf, args.mac)
+        except ValueError:
+            print("Invalid maf or mac value.")
+            parser.print_help()
+            return
 
 
 if __name__ == '__main__':
