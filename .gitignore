@@ -1,2 +1,5 @@
 test_temp/
+build/
+gwas_tools.egg-info/
+dist/
 *.pyc

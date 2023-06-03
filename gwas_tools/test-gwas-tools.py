@@ -54,7 +54,7 @@ class TestPlots(unittest.TestCase):
         generate_manhattan_plot(data, "./test_temp/manhattan_plot.png")
 
         # Check if a plot is created
-        self.assertTrue(os.path.isfile("./test_temp/manhattan_plot.png"))
+        self.assertTrue(os.path.isfile("../test_temp/manhattan_plot.png"))
 
     def test_generate_manhattanplot_morechromo(self):
         # Create example DataFrame
@@ -86,7 +86,7 @@ class TestPlots(unittest.TestCase):
 
 class TestReadGeno(unittest.TestCase):
     def test_read_vcf_single_id(self):
-        out = read_geno("./testfiles/vcf/single_id.vcf")
+        out = read_geno("../testfiles/vcf/single_id.vcf")
         out_dict = out.to_dict()
         self.assertIsInstance(out['POS'][0], numpy.int32)
         self.assertIsInstance(out['A'][0], numpy.int8)
@@ -104,7 +104,7 @@ class TestReadGeno(unittest.TestCase):
                          )
 
     def test_read_vcf_multiple_id(self):
-        out = read_geno("./testfiles/vcf/multi_id.vcf")
+        out = read_geno("../testfiles/vcf/multi_id.vcf")
         out_dict = out.to_dict()
         self.assertIsInstance(out['POS'][0], numpy.int32)
         self.assertIsInstance(out['A'][0], numpy.int8)
@@ -125,7 +125,7 @@ class TestReadGeno(unittest.TestCase):
                           'C': {0: 3}}
                          )
     def test_read_vcf_multi_line(self):
-        out = read_geno("./testfiles/vcf/multi_line.vcf")
+        out = read_geno("../testfiles/vcf/multi_line.vcf")
         out_dict = out.to_dict()
         self.assertIsInstance(out['POS'][0], numpy.int32)
         self.assertIsInstance(out['A'][0], numpy.int8)
@@ -149,7 +149,7 @@ class TestReadGeno(unittest.TestCase):
 
 class TestReadPheno(unittest.TestCase):
     def test_read_pheno(self):
-        out = read_pheno("./testfiles/pheno/test.phen")
+        out = read_pheno("../testfiles/pheno/test.phen")
         out_dict = out.to_dict()
 
         self.assertIsInstance(out['a']['PHENO'], float)
@@ -161,7 +161,7 @@ class TestReadPheno(unittest.TestCase):
 class TestFilterMaf(unittest.TestCase):
     def test_filter_maf(self):
         # Reading in the vcf file to out
-        vcf_file = "./testfiles/vcf/multi_line_after_readin.vcf"
+        vcf_file = "../testfiles/vcf/multi_line_after_readin.vcf"
         with open(vcf_file, 'r') as file:
             column_names = file.readline().rstrip('\n').split("\t")
         out = pd.read_csv(vcf_file, \
@@ -174,7 +174,7 @@ class TestFilterMaf(unittest.TestCase):
 class TestFilterCount(unittest.TestCase):
     def test_filter_count(self):
         # Reading in the vcf file to out
-        vcf_file = "./testfiles/vcf/multi_line_after_readin.vcf"
+        vcf_file = "../testfiles/vcf/multi_line_after_readin.vcf"
         with open(vcf_file, 'r') as file:
             column_names = file.readline().rstrip('\n').split("\t")
         out = pd.read_csv(vcf_file, \
@@ -186,4 +186,4 @@ class TestFilterCount(unittest.TestCase):
         self.assertEqual(geno["POS"], expected)
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.m

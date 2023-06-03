@@ -15,7 +15,7 @@ pip install .
 ## Usage
 
 ```bash
-usage: gwas-tools-cli [-h] --pheno PHENO --geno GENO --out OUT [--maf MAF]
+usage: gwas_tools-cli [-h] --pheno PHENO --geno GENO --out OUT [--maf MAF]
                       [--mac MAC] [--version]
 Perform GWAS analysis on phenotypes and genotypes.
 options:

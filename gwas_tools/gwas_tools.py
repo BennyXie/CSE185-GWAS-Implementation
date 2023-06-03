@@ -324,4 +324,4 @@ def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None,
     return geno_with_stats
 
 if __name__ == '__main__':
-    print("run gwas-tools-cli from command line")
+    print("run gwas_tools-cli from command line")
