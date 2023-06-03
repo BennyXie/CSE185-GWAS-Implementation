@@ -36,14 +36,14 @@ def main():
         try :
             geno = read_geno(args.geno)
         except InvalidFileFormatError:
-            print("Invalid genotype file.")
+            print("Invalid genotype file. It must be a VCF file.")
             parser.print_help()
             return
         # read phenotype file
         try:
             pheno = read_pheno(args.pheno)
         except InvalidFileFormatError:
-            print("Invalid phenotype file.")
+            print("Invalid phenotype file. It must be a CSV file with the first column being sample ID and the second column being numeric phenotype measurements.")
             parser.print_help()
             return
 
@@ -55,7 +55,7 @@ def main():
         try:
             run_gwas(pheno, geno, args.out, args.maf, args.mac)
         except ValueError:
-            print("Invalid maf or mac value.") #TODO: This may ignore some errors and print incorrect message
+            print("Invalid input, likely to be malformed maf or mac value.") #TODO: This may ignore some errors and print incorrect message
             parser.print_help()
             return
 

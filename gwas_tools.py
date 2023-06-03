@@ -208,13 +208,14 @@ def write_stats(genotypes_with_stats: pd.DataFrame, output_folder: str):
 
 def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame):
     """
-    Calculate statistics for GWAS
+    Calculate statistics for GWAS, iDs that doesn't match are excluded in calculation
 
     :param phenotypes: phenotype data
     :param genotypes: genotype data
     :return: dataframe with genotypes and statistics
     """
     # create a copy of the genotypes dataframe to store the genotypes with statistics
+    # add debug flag
     genotypes_with_stats = genotypes.copy()
     common_columns = list(set(genotypes.columns) & set(phenotypes.columns))
     genotypes_matched = genotypes[common_columns]
