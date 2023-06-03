@@ -106,6 +106,7 @@ def verify_geno_pheno(geno: pd.DataFrame, pheno: pd.DataFrame):
 def generate_qqplot(data: pd.DataFrame, out: str = None):
     """
     Generate a QQ plot of the expected and observed -log10(p-values)
+    :param out: output file path
     :param data: p-value data
     """
     if 'PVALUE' not in data.columns:
@@ -141,8 +142,8 @@ def generate_qqplot(data: pd.DataFrame, out: str = None):
 def generate_manhattan_plot(geno_with_stats: pd.DataFrame, out=None):
     """
     Generate a Manhattan plot of the expected and observed -log10(p-values)
-    :param statistics: p-value data
-    :param chromosome_data: chromosome data
+    :param out: output file path
+    :param geno_with_stats: p-value data and chromosome data (DataFrame)
     """
     if 'PVALUE' not in geno_with_stats.columns:
         raise ValueError("Input DataFrame should contain a 'PVALUE' column.")

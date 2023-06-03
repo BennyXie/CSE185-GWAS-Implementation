@@ -2,10 +2,10 @@ import os.path
 import unittest
 import numpy
 import pandas as pd
-from gwas_tools import *
+from .gwas_tools import *
 import numpy as np
 import subprocess
-"""
+
 class TestPlots(unittest.TestCase):
     def test_generate_qqplot_uniform(self):
         data = pd.DataFrame({
@@ -40,10 +40,10 @@ class TestPlots(unittest.TestCase):
         })
 
         # Call the generate_plot function
-        generate_qqplot(data)
+        generate_qqplot(data, "./test_temp/qqplot.png")
 
         # Assert that no errors occurred during the plot generation
-        self.assertTrue(True)
+        self.assertTrue(os.path.isfile("./test_temp/qqplot.png"))
     def test_generate_manhattan_plot(self):
         # Create example DataFrame
         data = pd.DataFrame({
@@ -54,7 +54,7 @@ class TestPlots(unittest.TestCase):
         generate_manhattan_plot(data, "./test_temp/manhattan_plot.png")
 
         # Check if a plot is created
-        self.assertTrue(os.path.isfile("../test_temp/manhattan_plot.png"))
+        self.assertTrue(os.path.isfile("./test_temp/manhattan_plot.png"))
 
     def test_generate_manhattanplot_morechromo(self):
         # Create example DataFrame
@@ -86,7 +86,7 @@ class TestPlots(unittest.TestCase):
 
 class TestReadGeno(unittest.TestCase):
     def test_read_vcf_single_id(self):
-        out = read_geno("../testfiles/vcf/single_id.vcf")
+        out = read_geno("./testfiles/vcf/single_id.vcf")
         out_dict = out.to_dict()
         self.assertIsInstance(out['POS'][0], numpy.int32)
         self.assertIsInstance(out['A'][0], numpy.int8)
@@ -104,7 +104,7 @@ class TestReadGeno(unittest.TestCase):
                          )
 
     def test_read_vcf_multiple_id(self):
-        out = read_geno("../testfiles/vcf/multi_id.vcf")
+        out = read_geno("./testfiles/vcf/multi_id.vcf")
         out_dict = out.to_dict()
         self.assertIsInstance(out['POS'][0], numpy.int32)
         self.assertIsInstance(out['A'][0], numpy.int8)
@@ -125,7 +125,7 @@ class TestReadGeno(unittest.TestCase):
                           'C': {0: 3}}
                          )
     def test_read_vcf_multi_line(self):
-        out = read_geno("../testfiles/vcf/multi_line.vcf")
+        out = read_geno("./testfiles/vcf/multi_line.vcf")
         out_dict = out.to_dict()
         self.assertIsInstance(out['POS'][0], numpy.int32)
         self.assertIsInstance(out['A'][0], numpy.int8)
@@ -149,7 +149,7 @@ class TestReadGeno(unittest.TestCase):
 
 class TestReadPheno(unittest.TestCase):
     def test_read_pheno(self):
-        out = read_pheno("../testfiles/pheno/test.phen")
+        out = read_pheno("./testfiles/pheno/test.phen")
         out_dict = out.to_dict()
 
         self.assertIsInstance(out['a']['PHENO'], float)
@@ -161,7 +161,7 @@ class TestReadPheno(unittest.TestCase):
 class TestFilterMaf(unittest.TestCase):
     def test_filter_maf(self):
         # Reading in the vcf file to out
-        vcf_file = "../testfiles/vcf/multi_line_after_readin.vcf"
+        vcf_file = "./testfiles/vcf/multi_line_after_readin.vcf"
         with open(vcf_file, 'r') as file:
             column_names = file.readline().rstrip('\n').split("\t")
         out = pd.read_csv(vcf_file, \
@@ -174,7 +174,7 @@ class TestFilterMaf(unittest.TestCase):
 class TestFilterCount(unittest.TestCase):
     def test_filter_count(self):
         # Reading in the vcf file to out
-        vcf_file = "../testfiles/vcf/multi_line_after_readin.vcf"
+        vcf_file = "./testfiles/vcf/multi_line_after_readin.vcf"
         with open(vcf_file, 'r') as file:
             column_names = file.readline().rstrip('\n').split("\t")
         out = pd.read_csv(vcf_file, \
@@ -184,10 +184,11 @@ class TestFilterCount(unittest.TestCase):
         # The expected output
         expected = {0: 1, 1 : 2, 3: 4, 4: 5}
         self.assertEqual(geno["POS"], expected)
-"""
+
 class GWASTestCase(unittest.TestCase):
     def test_gwas_analysis(self):
-        command = "python3 ~/CSE185-GWAS-Implementation/gwas_tools/gwas_tools_cli.py --pheno ~/CSE185-GWAS-Implementation/testfiles/pheno/lab3_gwas.phen --geno ~/CSE185-GWAS-Implementation/testfiles/vcf/gwas_test.vcf --out ~/CSE185-GWAS-Implementation/testfiles --maf 0.5 --mac 10" 
+
+        command = "python -m gwas_tools.gwas_tools_cli --pheno ./testfiles/pheno/lab3_gwas.phen --geno ./testfiles/vcf/gwas_test.vcf --out ./test_temp --maf 0.05 --mac 10"
         result = subprocess.run(command, shell=True, capture_output=True, text=True)
         
         # Assert that the command ran successfully
@@ -199,7 +200,7 @@ class GWASTestCase(unittest.TestCase):
         os.chdir(parent_directory)
         # Define the expected output file names
         expected_output_files = ["manhattan.png","qqplot.png", "stats.csv"]
-        files_in_dir = os.listdir("testfiles")
+        files_in_dir = os.listdir("test_temp")
         
         # Assert that each expected output file is in the expected directory
         for file_name in expected_output_files:

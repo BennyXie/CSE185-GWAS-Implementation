@@ -1,4 +1,4 @@
-from gwas_tools import *
+from .gwas_tools import *
 import argparse
 import os
 
@@ -38,26 +38,27 @@ def main():
         except InvalidFileFormatError:
             print("Invalid genotype file. It must be a VCF file.")
             parser.print_help()
-            return
+            exit(-1)
         # read phenotype file
         try:
             pheno = read_pheno(args.pheno)
         except InvalidFileFormatError:
             print("Invalid phenotype file. It must be a CSV file with the first column being sample ID and the second column being numeric phenotype measurements.")
             parser.print_help()
-            return
+            exit(-1)
 
 
         # run GWAS
         if args.debug:
             run_gwas(pheno, geno, args.out, args.maf, args.mac)
-            return
+            exit(0)
         try:
             run_gwas(pheno, geno, args.out, args.maf, args.mac)
         except ValueError:
             print("Invalid input, likely to be malformed maf or mac value.") #TODO: This may ignore some errors and print incorrect message
             parser.print_help()
-            return
+            exit(-1)
+    exit(0)
 
 
 if __name__ == '__main__':
