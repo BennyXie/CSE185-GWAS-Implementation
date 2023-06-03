@@ -2,7 +2,7 @@ import os.path
 import unittest
 import numpy
 import pandas as pd
-from gwas_tools import *
+from gwas_tools.gwas_tools import *
 import numpy as np
 import subprocess
 
