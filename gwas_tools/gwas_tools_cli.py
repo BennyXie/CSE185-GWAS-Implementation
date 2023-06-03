@@ -1,4 +1,4 @@
-from .gwas_tools import *
+from gwas_tools import *
 import argparse
 import os
 

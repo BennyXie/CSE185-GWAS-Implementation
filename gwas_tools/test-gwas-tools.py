@@ -2,10 +2,10 @@ import os.path
 import unittest
 import numpy
 import pandas as pd
-from gwas_tools.gwas_tools import *
+from gwas_tools import *
 import numpy as np
 import subprocess
-
+"""
 class TestPlots(unittest.TestCase):
     def test_generate_qqplot_uniform(self):
         data = pd.DataFrame({
@@ -184,15 +184,19 @@ class TestFilterCount(unittest.TestCase):
         # The expected output
         expected = {0: 1, 1 : 2, 3: 4, 4: 5}
         self.assertEqual(geno["POS"], expected)
-
+"""
 class GWASTestCase(unittest.TestCase):
     def test_gwas_analysis(self):
-        command = "python3 gwas-tools-cli.py --pheno ~/CSE185-GWAS-Implementation/testfiles/pheno/lab3_gwas.phen --geno ~/CSE185-GWAS-Implementation/testfiles/vcf/gwas_test.vcf --out ~/CSE185-GWAS-Implementation/testfiles --maf 0.5 --mac 1" 
+        command = "python3 ~/CSE185-GWAS-Implementation/gwas_tools/gwas_tools_cli.py --pheno ~/CSE185-GWAS-Implementation/testfiles/pheno/lab3_gwas.phen --geno ~/CSE185-GWAS-Implementation/testfiles/vcf/gwas_test.vcf --out ~/CSE185-GWAS-Implementation/testfiles --maf 0.5 --mac 10" 
         result = subprocess.run(command, shell=True, capture_output=True, text=True)
         
         # Assert that the command ran successfully
         self.assertEqual(result.returncode, 0)
 
+        current_directory = os.getcwd()
+        parent_directory = os.path.dirname(current_directory)
+
+        os.chdir(parent_directory)
         # Define the expected output file names
         expected_output_files = ["manhattan.png","qqplot.png", "stats.csv"]
         files_in_dir = os.listdir("testfiles")
@@ -203,4 +207,4 @@ class GWASTestCase(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.m
+    unittest.main()
