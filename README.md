@@ -31,3 +31,8 @@ options:
   --version             show program's version number and exit
 
 ```
+
+## Report Error
+
+If there is any error in using our tool, please help us fix the error by leaving a 
+comment in the "Issues" section in our repo. We will get to you as soon as possible.
