@@ -232,7 +232,7 @@ def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame, threads: int =
             'PVALUE': results.f_pvalue,
             'STDERR': results.bse[0]
         }
-
+    
     genotypes = genotypes.dropna()
     phenotypes = phenotypes.dropna()
     common_columns = list(set(genotypes.columns) & set(phenotypes.columns))

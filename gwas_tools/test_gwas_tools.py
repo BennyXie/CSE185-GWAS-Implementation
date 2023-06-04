@@ -250,5 +250,94 @@ class GWASTestCase(unittest.TestCase):
         # Assert that the command ran successfully
         self.assertEqual(result.returncode, 1)
 
+class CalcStatsTestCase(unittest.TestCase):
+    """
+    def test_null_case(self):
+        # Generate fixed set of random numbers for genotypes and phenotypes
+        genotypes = pd.DataFrame({'Genotype': [1, 2, 3]})
+        phenotypes = pd.DataFrame({'Phenotype': [4, 5, 6]})
+
+        expected_output = pd.DataFrame({
+            'Genotype': [1, 2, 3],
+            'SLOPE': [np.nan, np.nan, np.nan],
+            'INTERCEPT': [np.nan, np.nan, np.nan],
+            'RVALUE': [np.nan, np.nan, np.nan],
+            'PVALUE': [np.nan, np.nan, np.nan],
+            'STDERR': [np.nan, np.nan, np.nan]
+        })
+
+        result = calc_stats(genotypes, phenotypes)
+        self.assertTrue(result.equals(expected_output))
+    """
+
+    def test_slope_case(self):
+        # Generate random numbers for genotypes and phenotypes with a correlation
+        np.random.seed(42)
+        """
+        # Create VCF-formatted genotype dataframe
+        genotype_data = {
+            'CHROM': [1, 1, 1, 1, 1],
+            'POS': [1, 2, 3, 4, 5],
+            'ID': ['rs1', 'rs2', 'rs3', 'rs4', 'rs5'],
+            'REF': ['A', 'C', 'A', 'A', 'T'],
+            'ALT': ['C', 'A', 'C', 'G', 'C'],
+            'QUAL': [np.nan, np.nan, np.nan, np.nan, np.nan],
+            'FILTER': [np.nan, np.nan, np.nan, np.nan, np.nan],
+            'INFO': ['.', '.', '.', '.', '.'],
+            'FORMAT': ['GT', 'GT', 'GT', 'GT', 'GT'],
+            'A': [1, 1, 1, 1, 2],
+            'B': [3, 1, 1, 1, 2],
+            'C': [3, 2, 1, 1, 2],
+            'D': [3, 2, 3, 1, 2],
+            'E': [3, 2, 3, 2, 1],
+        }
+        genotypes = pd.DataFrame(genotype_data)
+
+        # Create PHEN-formatted phenotype dataframe
+        phenotypes_data = {
+            'ID': ['rs1', 'rs2', 'rs3', 'rs4', 'rs5'],
+            'PHEN': [3,2,1,1,2]
+        }
+
+        phenotypes = pd.DataFrame(phenotypes_data)
+        """
+        genotype_data = {
+            'CHROM': [1, 1, 1, 1, 1],
+            'POS': [1, 2, 3, 4, 5],
+            'ID': ['rs1', 'rs2', 'rs3', 'rs4', 'rs5'],
+            'REF': ['A', 'A', 'A', 'A', 'A'],
+            'ALT': ['C', 'C', 'C', 'C', 'C'],
+            'QUAL': ['.', '.', '.', '.', '.'],
+            'FILTER': ['.', '.', '.', '.', '.'],
+            'INFO': ['.', '.', '.', '.', '.'],
+            'FORMAT': ['GT', 'GT', 'GT', 'GT', 'GT'],
+            'A': [1, 1, 1, 1, 2],
+            'B': [3, 1, 1, 1, 2],
+            'C': [3, 2, 1, 1, 2],
+            'D': [3, 2, 3, 1, 2],
+            'E': [3, 2, 3, 2, 1],
+        }
+        genotypes = pd.DataFrame(genotype_data)
+
+        # Create PHEN-formatted phenotype dataframe
+        phenotypes_data = {
+            'ID': ['rs1', 'rs2', 'rs3', 'rs4', 'rs5'],
+            'PHEN': [2, 2, 2, 2, 4]#2 * genotypes['A'] + np.random.normal(0, 0.1, 5)
+        }
+        phenotypes = pd.DataFrame(phenotypes_data)
+
+        #print("Genotypes:")
+        #print(genotypes)
+
+        ##print("Phenotypes:")
+        #print(phenotypes)
+
+        result = calc_stats(genotypes, phenotypes)
+    
+        # Check that the slope is non-zero
+        #print(result)
+        self.assertTrue(any(result['SLOPE'] != 0.0))
+
+
 if __name__ == '__main__':
     unittest.main()
