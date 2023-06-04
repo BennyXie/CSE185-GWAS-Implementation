@@ -16,6 +16,7 @@ def main():
     parser.add_argument('--mac', type=int, help='Minimum of minor allele count of a genotype')
     parser.add_argument('--version', action='version', version='gwas_tools ' + __version__)
     parser.add_argument('--debug', action='store_true', help='Print debug messages')
+    parser.add_argument('--threads', '-t', type=int, help='Number of threads to use')
     args = parser.parse_args()
     if args.pheno == '-h' or args.geno == '-h' or args.out == '-h':
         parser.print_help()
@@ -32,6 +33,31 @@ def main():
         # create output directory if it doesn't exist
         if not os.path.exists(args.out):
             os.makedirs(args.out)
+        #check if genotype file and phenotype file exist
+        if not os.path.isfile(args.geno):
+            print("Genotype file does not exist.")
+            parser.print_help()
+            exit(-1)
+        if not os.path.isfile(args.pheno):
+            print("Phenotype file does not exist.")
+            parser.print_help()
+            exit(-1)
+
+        # check if maf and mac are valid
+        if args.maf is not None and (args.maf < 0 or args.maf > 1):
+            print("Invalid maf value. It must be between 0 and 1.")
+            parser.print_help()
+            exit(-1)
+        if args.mac is not None and args.mac < 0:
+            print("Invalid mac value. It must be greater than 0.")
+            parser.print_help()
+            exit(-1)
+
+        # check if threads is valid
+        if args.threads is not None and args.threads < 1:
+            print("Invalid threads value. It must be greater than 0.")
+            parser.print_help()
+            exit(-1)
 
         # read genotype file
         try :
@@ -48,13 +74,16 @@ def main():
             parser.print_help()
             exit(-1)
 
+        threads = 1
+        if args.threads is not None:
+            threads = args.threads
 
         # run GWAS
         if args.debug:
-            run_gwas(pheno, geno, args.out, args.maf, args.mac)
+            run_gwas(pheno, geno, args.out, args.maf, args.mac, threads)
             exit(0)
         try:
-            run_gwas(pheno, geno, args.out, args.maf, args.mac)
+            run_gwas(pheno, geno, args.out, args.maf, args.mac, threads)
         except ValueError:
             print("Invalid input, likely to be malformed maf or mac value.") #TODO: This may ignore some errors and print incorrect message
             parser.print_help()

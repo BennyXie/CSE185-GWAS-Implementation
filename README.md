@@ -17,7 +17,7 @@ pip install . # For user installation, add --user
 ## Usage
 
 ```bash
-usage: gwas_tools-cli [-h] --pheno PHENO --geno GENO --out OUT [--maf MAF] [--mac MAC] [--version] [--debug]
+usage: gwas_tools-cli [-h] --pheno PHENO --geno GENO --out OUT [--maf MAF] [--mac MAC] [--version] [--debug] [--threads THREADS]
 
 Perform GWAS analysis on phenotypes and genotypes.
 
@@ -31,6 +31,8 @@ options:
   --mac MAC             Minimum of minor allele count of a genotype
   --version             show program's version number and exit
   --debug               Print debug messages
+  --threads THREADS, -t THREADS
+                        Number of threads to use
 ```
 
 ## Report Error

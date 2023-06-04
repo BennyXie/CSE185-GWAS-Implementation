@@ -4,6 +4,9 @@ import numpy as np
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
 import datetime
+from concurrent.futures import ThreadPoolExecutor
+
+
 class InvalidFileFormatError(Exception):
     pass
 
@@ -204,7 +207,7 @@ def write_stats(genotypes_with_stats: pd.DataFrame, out: str):
     output_df.to_csv(out, sep="\t", index=False)
 
 
-def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame):
+def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame, threads: int = 1):
     """
     Calculate statistics for GWAS, iDs that doesn't match are excluded in calculation
 
@@ -212,37 +215,54 @@ def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame):
     :param genotypes: genotype data
     :return: dataframe with genotypes and statistics
     """
+
     # create a copy of the genotypes dataframe to store the genotypes with statistics
     # add debug flag
-    genotypes_with_stats = genotypes.copy()
+
+    def calc_row_stats(row):
+        x = row  # Exclude the first column
+        X = sm.add_constant(x)
+        model = sm.OLS(y, X)
+        results = model.fit()
+
+        return {
+            'SLOPE': results.params[1],
+            'INTERCEPT': results.params[0],
+            'RVALUE': results.rsquared,
+            'PVALUE': results.f_pvalue,
+            'STDERR': results.bse[0]
+        }
+
+    genotypes = genotypes.dropna()
+    phenotypes = phenotypes.dropna()
     common_columns = list(set(genotypes.columns) & set(phenotypes.columns))
     genotypes_matched = genotypes[common_columns]
     phenotypes_matched = phenotypes[common_columns]
+    # Convert to numpy arrays
+    genotypes_arr = genotypes_matched.values
+    y = phenotypes_matched.iloc[1].to_numpy()
     slopes = []
     intercepts = []
     rvalues = []
     pvalues = []
     stderrs = []
     # calculate the statistics
-    for i, row in genotypes_matched.iterrows():
-        y = phenotypes_matched.iloc[1].to_numpy()
-        x = row.to_numpy()
-        X = sm.add_constant(x)
-        model = sm.OLS(y, X)
-        results = model.fit()
-        # add the statistics as columns to the genotypes dataframe
-        slopes.append(results.params[1])
-        intercepts.append(results.params[0])
-        rvalues.append(results.rsquared)
-        pvalues.append(results.f_pvalue)
-        stderrs.append(results.bse[0])
+    with ThreadPoolExecutor(max_workers=threads) as executor:
+        results = executor.map(calc_row_stats, genotypes_arr)
 
-    genotypes_with_stats['SLOPE'] = pd.Series(slopes)
-    genotypes_with_stats['INTERCEPT'] = pd.Series(intercepts)
-    genotypes_with_stats['RVALUE'] = pd.Series(rvalues)
-    genotypes_with_stats['PVALUE'] = pd.Series(pvalues)
-    genotypes_with_stats['STDERR'] = pd.Series(stderrs)
-    return genotypes_with_stats
+        for result in results:
+            slopes.append(result['SLOPE'])
+            intercepts.append(result['INTERCEPT'])
+            rvalues.append(result['RVALUE'])
+            pvalues.append(result['PVALUE'])
+            stderrs.append(result['STDERR'])
+
+    genotypes['SLOPE'] = pd.Series(slopes)
+    genotypes['INTERCEPT'] = pd.Series(intercepts)
+    genotypes['RVALUE'] = pd.Series(rvalues)
+    genotypes['PVALUE'] = pd.Series(pvalues)
+    genotypes['STDERR'] = pd.Series(stderrs)
+    return genotypes
 
 
 def filter_maf_mac(geno: pd.DataFrame, maf: float = 0, mac: int = 0):
@@ -251,19 +271,19 @@ def filter_maf_mac(geno: pd.DataFrame, maf: float = 0, mac: int = 0):
     if mac < 0:
         raise ValueError("mac filter only accepts positive number of minor alleles")
     # create a freq df which only contains the genotypes
-    total_allele_count = (geno.shape[1]-9)*2
+    total_allele_count = (geno.shape[1] - 9) * 2
     drop = []
     for index, row in geno.iterrows():
-        allele_count = [0,0]
-        for i in [1,2,3]:
+        allele_count = [0, 0]
+        for i in [1, 2, 3]:
             count = row.iloc[9:].isin([i]).sum()
             if i == 1:
-                allele_count[0] += count*2
+                allele_count[0] += count * 2
             elif i == 2:
                 allele_count[0] += count
                 allele_count[1] += count
             elif i == 3:
-                allele_count[1] += count*2
+                allele_count[1] += count * 2
 
         if min(allele_count[0], allele_count[1]) / total_allele_count < maf:
             drop.append(index)
@@ -273,8 +293,7 @@ def filter_maf_mac(geno: pd.DataFrame, maf: float = 0, mac: int = 0):
     return geno
 
 
-
-def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None, maf=None, mac=None):
+def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None, maf=None, mac=None, threads: int = 1):
     """
     Run GWAS analysis on phenotypes and genotypes
     :param phenotypes: phenotype file
@@ -287,21 +306,22 @@ def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None,
     if mac is not None and maf is not None:
         filter_maf_mac(genotypes, maf, mac)
     elif maf is not None:
-        genotypes = filter_maf_mac(genotypes, maf = maf)
+        genotypes = filter_maf_mac(genotypes, maf=maf)
     elif mac is not None:
         genotypes = filter_maf_mac(genotypes, mac)
     # calculate statistics
-    geno_with_stats = calc_stats(genotypes, phenotypes)
+    geno_with_stats = calc_stats(genotypes, phenotypes, threads)
     # write statistics to file
     current_time = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S-")
 
     if out is not None:
         write_stats(geno_with_stats, out + current_time + "stats.csv")
     # plot manhattan plot
-    generate_manhattan_plot(geno_with_stats, out+current_time+"manhattan-plot.png")
+    generate_manhattan_plot(geno_with_stats, out + current_time + "manhattan-plot.png")
     # plot qq plot
-    generate_qqplot(geno_with_stats, out+current_time+"qq-plot.png")
+    generate_qqplot(geno_with_stats, out + current_time + "qq-plot.png")
     return geno_with_stats
+
 
 if __name__ == '__main__':
     print("run gwas_tools-cli from command line")

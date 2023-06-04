@@ -225,7 +225,7 @@ class GWASTestCase(unittest.TestCase):
         result = subprocess.run(command, shell=True, capture_output=True, text=True)
 
         # Assert that the command ran successfully
-        self.assertEqual(result.returncode, 0)
+        self.assertEqual(0,result.returncode)
 
         # Define the expected output file names
         expected_output_files = ["manhattan-plot.png", "qq-plot.png", "stats.csv"]
