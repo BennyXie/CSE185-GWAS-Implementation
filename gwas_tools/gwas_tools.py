@@ -248,6 +248,8 @@ def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame):
 def filter_maf_mac(geno: pd.DataFrame, maf: float = 0, mac: int = 0):
     if maf < 0 or maf > 1:
         raise ValueError("maf must be between 0 and 1")
+    if mac < 0:
+        raise ValueError("mac filter only accepts positive number of minor alleles")
     # create a freq df which only contains the genotypes
     total_allele_count = (geno.shape[1]-9)*2
     drop = []
