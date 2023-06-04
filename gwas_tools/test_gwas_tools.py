@@ -237,6 +237,18 @@ class GWASTestCase(unittest.TestCase):
         file_count_after = len(files_in_dir)
         self.assertTrue(file_count_after - file_count_before == len(expected_output_files))
 
+    def test_gwas_analysis_no_args(self):
+        command = "python -m gwas_tools.gwas-tools-cli"
+        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+
+        # Assert that the command ran successfully
+        self.assertEqual(1,result.returncode)
+    def test_gwas_analysis_no_pheno(self):
+        command = "python -m gwas_tools.gwas-tools-cli --geno testfiles/vcf/gwas_test.vcf --out ./test_temp"
+        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+
+        # Assert that the command ran successfully
+        self.assertEqual(result.returncode, 1)
 
 if __name__ == '__main__':
     unittest.main()
