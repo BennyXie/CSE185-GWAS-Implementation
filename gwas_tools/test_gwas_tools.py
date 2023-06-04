@@ -7,8 +7,12 @@ run with: `python -m gwas_tools.test_gwas_tools` from project root
 import os.path
 import unittest
 import subprocess
+import shutil
 from gwas_tools.gwas_tools import *
 
+if os.path.exists("./test_temp"):
+    shutil.rmtree("./test_temp")
+os.mkdir("./test_temp")
 
 class TestPlots(unittest.TestCase):
     def test_generate_qqplot_uniform(self):
