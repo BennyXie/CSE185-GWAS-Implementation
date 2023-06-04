@@ -3,3 +3,4 @@ build/
 gwas_tools.egg-info/
 dist/
 *.pyc
+*.pyc
