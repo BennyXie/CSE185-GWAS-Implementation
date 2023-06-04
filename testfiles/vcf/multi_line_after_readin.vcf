@@ -1,6 +1,0 @@
-#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	A	B	C	D
-1	1	rs1	C	G	.	.	.	GT	3	2	1	1
-1	2	rs2	A	T	.	.	.	GT	2	2	1	1
-1	3	rs3	C	A	.	.	.	GT	1	2	1	1
-1	4	rs4	C	T	.	.	.	GT	3	3	2	1
-1	5	rs5	C	G	.	.	.	GT	3	1	1	1

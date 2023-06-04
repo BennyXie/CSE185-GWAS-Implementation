@@ -55,7 +55,7 @@ def read_geno(vcf_file: str):
     # map genotypes to numeric values 1,2,3
     for i in range(9, len(column_name)):
         vcf[column_name[i]] = vcf[column_name[i]].map(mapping)
-    vcf[column_name[1]] = vcf[column_name[1]].astype(int)
+    vcf[column_name[1]] = vcf[column_name[1]].astype(numpy.int32)
     return vcf
 
 
@@ -248,54 +248,31 @@ def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame):
     return genotypes_with_stats
 
 
-def filter_maf(geno: pd.DataFrame, maf: float):
-    """
-    Filter genotypes by minor allele frequency
-    :param geno: genotype data
-    :param maf: minor allele frequency between 0 and 1
-    :return: genotype data with minor allele frequency greater than maf
-    """
+def filter_maf_mac(geno: pd.DataFrame, maf: float = 0, mac: int = 0):
     if maf < 0 or maf > 1:
         raise ValueError("maf must be between 0 and 1")
     # create a freq df which only contains the genotypes
-    freq = geno.drop(columns=geno.columns[0:9])
-    total_allele_count = len(freq.iloc[0]) * 2
+    total_allele_count = (geno.shape[1]-9)*2
+    drop = []
+    for index, row in geno.iterrows():
+        allele_count = [0,0]
+        for i in [1,2,3]:
+            count = row.iloc[9:].isin([i]).sum()
+            if i == 1:
+                allele_count[0] += count*2
+            elif i == 2:
+                allele_count[0] += count
+                allele_count[1] += count
+            elif i == 3:
+                allele_count[1] += count*2
 
-    for index, row in freq.iterrows():
-        value_counts = row.value_counts().to_dict()
-        minor_allele_count = 0
-        # counting maf
-        for type, allele_count in value_counts.items():
-            minor_allele_count += (type - 1) * allele_count
-        # dropping the rows that has too few maf
-        if minor_allele_count / total_allele_count < maf:
-            geno = geno.drop(index)
-
+        if min(allele_count[0], allele_count[1]) / total_allele_count < maf:
+            drop.append(index)
+        if min(allele_count[0], allele_count[1]) < mac:
+            drop.append(index)
+    geno.drop(drop, inplace=True)
     return geno
 
-
-def filter_mac(geno: pd.DataFrame, mac: int):
-    """
-    Filter genotypes by sample count
-    :param geno: genotype data
-    :param mac: count of minor alleles
-    :return: genotype data with minor alleles occuring at least 'mac' times.
-    """
-    if mac < 0:
-        raise ValueError("mac filter only accepts positive number of minor alleles")
-    # create a freq df which only contains the genotypes
-    freq = geno.drop(columns=geno.columns[0:9])
-    
-    for index, row in freq.iterrows():
-        value_counts = row.value_counts().to_dict()
-        minor_allele_count = 0
-        # counting maf
-        for type, allele_count in value_counts.items():
-            minor_allele_count += (type - 1) * allele_count
-        # dropping the rows that has too few maf
-        if minor_allele_count < mac:
-            geno = geno.drop(index)
-    return geno
 
 
 def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None, maf=None, mac=None):
@@ -308,11 +285,12 @@ def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None,
     :param mac: minimum sample count
     :return: vcf data and statistics of linear regression
     """
-
-    if maf is not None:
-        genotypes = filter_maf(genotypes, maf)
-    if mac is not None:
-        genotypes = filter_mac(genotypes, mac)
+    if mac is not None and maf is not None:
+        filter_maf_mac(genotypes, maf, mac)
+    elif maf is not None:
+        genotypes = filter_maf_mac(genotypes, maf = maf)
+    elif mac is not None:
+        genotypes = filter_maf_mac(genotypes, mac)
     # calculate statistics
     geno_with_stats = calc_stats(genotypes, phenotypes)
     # write statistics to file
