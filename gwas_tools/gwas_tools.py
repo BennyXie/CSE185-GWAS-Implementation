@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
-
+import datetime
 class InvalidFileFormatError(Exception):
     pass
 
@@ -183,12 +183,12 @@ def generate_manhattan_plot(geno_with_stats: pd.DataFrame, out=None):
         plt.show()
 
 
-def write_stats(genotypes_with_stats: pd.DataFrame, output_folder: str):
+def write_stats(genotypes_with_stats: pd.DataFrame, out: str):
     """
     Write a stats.csv file containing the statistics
 
     :param genotypes_with_stats: dataframe containing genotypes and statistics
-    :param output_folder: output folder
+    :param output_folder: output file path
     :return: true if successful
     """
     output_df = pd.DataFrame({
@@ -201,7 +201,7 @@ def write_stats(genotypes_with_stats: pd.DataFrame, output_folder: str):
         "STDERR": genotypes_with_stats["STDERR"]
     })
 
-    output_df.to_csv(output_folder + "stats.csv", sep="\t", index=False)
+    output_df.to_csv(out, sep="\t", index=False)
 
 
 def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame):
@@ -293,12 +293,14 @@ def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None,
     # calculate statistics
     geno_with_stats = calc_stats(genotypes, phenotypes)
     # write statistics to file
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S-")
+
     if out is not None:
-        write_stats(geno_with_stats, out)
+        write_stats(geno_with_stats, out + current_time + "stats.csv")
     # plot manhattan plot
-    generate_manhattan_plot(geno_with_stats, out+"manhattan.png")
+    generate_manhattan_plot(geno_with_stats, out+current_time+"manhattan-plot.png")
     # plot qq plot
-    generate_qqplot(geno_with_stats, out+"qqplot.png")
+    generate_qqplot(geno_with_stats, out+current_time+"qq-plot.png")
     return geno_with_stats
 
 if __name__ == '__main__':

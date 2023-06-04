@@ -6,10 +6,8 @@ run with: `python -m gwas_tools.test_gwas_tools` from project root
 
 import os.path
 import unittest
-import pandas as pd
-from gwas_tools.gwas_tools import *
-import numpy as np
 import subprocess
+from gwas_tools.gwas_tools import *
 
 
 class TestPlots(unittest.TestCase):
@@ -17,23 +15,24 @@ class TestPlots(unittest.TestCase):
         data = pd.DataFrame({
             'PVALUE': np.random.uniform(0, 1, 1000)
         })
-
+        file_name = "./test_temp/qq-plot-0.png"
         # Call the generate_plot function
-        generate_qqplot(data)
+        generate_qqplot(data, file_name)
 
         # Assert that no errors occurred during the plot generation
-        self.assertTrue(True)
+        self.assertTrue(os.path.isfile(file_name))
 
     def test_generate_qqplot_exponential(self):
         data = pd.DataFrame({
             'PVALUE': np.random.exponential(scale=1, size=1000)
         })
 
+        file_name = "./test_temp/qq-plot-1.png"
         # Call the generate_plot function
-        generate_qqplot(data)
+        generate_qqplot(data, file_name)
 
         # Assert that no errors occurred during the plot generation
-        self.assertTrue(True)
+        self.assertTrue(os.path.isfile(file_name))
 
     def test_generate_qqplot_polynomial(self):
         np.random.seed(1)
@@ -45,11 +44,12 @@ class TestPlots(unittest.TestCase):
             'PVALUE': np.polyval(coefficients, x)
         })
 
+        file_name = "./test_temp/qq-plot-3.png"
         # Call the generate_plot function
-        generate_qqplot(data, "./test_temp/qqplot.png")
+        generate_qqplot(data, file_name)
 
         # Assert that no errors occurred during the plot generation
-        self.assertTrue(os.path.isfile("./test_temp/qqplot.png"))
+        self.assertTrue(os.path.isfile(file_name))
 
     def test_generate_manhattan_plot(self):
         # Create example DataFrame
@@ -57,11 +57,12 @@ class TestPlots(unittest.TestCase):
             'CHROM': np.random.randint(1, 10, size=1000), 'PVALUE': np.random.uniform(0, 1, 1000)
         })
 
+        file_name = "./test_temp/manhattan-plot-0.png"
         # Call the generate_plot function
-        generate_manhattan_plot(data, "./test_temp/manhattan_plot.png")
+        generate_manhattan_plot(data, file_name)
 
-        # Check if a plot is created
-        self.assertTrue(os.path.isfile("./test_temp/manhattan_plot.png"))
+        # Assert that no errors occurred during the plot generation
+        self.assertTrue(os.path.isfile(file_name))
 
     def test_generate_manhattanplot_morechromo(self):
         # Create example DataFrame
@@ -70,11 +71,12 @@ class TestPlots(unittest.TestCase):
             'CHROM': np.random.randint(1, 20, size=1000)
         })
 
+        file_name = "./test_temp/manhattan-plot-1.png"
         # Call the generate_plot function
-        generate_manhattan_plot(data)
+        generate_manhattan_plot(data, file_name)
 
-        # Check if a plot is created
-        self.assertTrue(True)
+        # Assert that no errors occurred during the plot generation
+        self.assertTrue(os.path.isfile(file_name))
 
     def test_generate_manhattanplot_bigger_size(self):
         # Create example DataFrame for p-values
@@ -83,11 +85,12 @@ class TestPlots(unittest.TestCase):
             'CHROM': np.random.randint(1, 8, size=10000)
         })
 
+        file_name = "./test_temp/manhattan-plot-2.png"
         # Call the generate_plot function
-        generate_manhattan_plot(data)
+        generate_manhattan_plot(data, file_name)
 
-        # Check if a plot is created
-        self.assertTrue(True)
+        # Assert that no errors occurred during the plot generation
+        self.assertTrue(os.path.isfile(file_name))
 
 
 class TestReadGeno(unittest.TestCase):
@@ -217,20 +220,18 @@ class TestFilterCount(unittest.TestCase):
 
 class GWASTestCase(unittest.TestCase):
     def test_gwas_analysis(self):
-        print(os.getcwd())
         command = "python -m gwas_tools.gwas_tools_cli --pheno ./testfiles/pheno/lab3_gwas.phen --geno ./testfiles/vcf/gwas_test.vcf --out ./test_temp --maf 0.05 --mac 10"
+        file_count_before = len(os.listdir("./test_temp"))
         result = subprocess.run(command, shell=True, capture_output=True, text=True)
 
         # Assert that the command ran successfully
         self.assertEqual(result.returncode, 0)
 
         # Define the expected output file names
-        expected_output_files = ["manhattan.png", "qqplot.png", "stats.csv"]
+        expected_output_files = ["manhattan-plot.png", "qq-plot.png", "stats.csv"]
         files_in_dir = os.listdir("./test_temp")
-
-        # Assert that each expected output file is in the expected directory
-        for file_name in expected_output_files:
-            self.assertIn(file_name, files_in_dir)
+        file_count_after = len(files_in_dir)
+        self.assertTrue(file_count_after - file_count_before == len(expected_output_files))
 
 
 if __name__ == '__main__':
