@@ -4,9 +4,6 @@ import numpy as np
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
 
-VERSION = "1.0.0"
-
-
 class InvalidFileFormatError(Exception):
     pass
 

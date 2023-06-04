@@ -1,6 +1,7 @@
 from gwas_tools.gwas_tools import *
 import argparse
 import os
+from gwas_tools.__version__ import __version__
 
 def main():
     parser = argparse.ArgumentParser(prog='gwas_tools-cli',
@@ -13,7 +14,7 @@ def main():
     parser.add_argument('--maf', type=float,
                         help='Minimum minor allele frequency (between 0 and 1)')
     parser.add_argument('--mac', type=int, help='Minimum of minor allele count of a genotype')
-    parser.add_argument('--version', action='version', version='gwas_tools ' + VERSION)
+    parser.add_argument('--version', action='version', version='gwas_tools ' + __version__)
     parser.add_argument('--debug', action='store_true', help='Print debug messages')
     args = parser.parse_args()
     if args.pheno == '-h' or args.geno == '-h' or args.out == '-h':
