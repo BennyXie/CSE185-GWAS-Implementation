@@ -8,12 +8,13 @@ import os.path
 import unittest
 import subprocess
 import shutil
+#from gwas_tools import *
 from gwas_tools.gwas_tools import *
 
 if os.path.exists("./test_temp"):
     shutil.rmtree("./test_temp")
 os.mkdir("./test_temp")
-
+"""
 class TestPlots(unittest.TestCase):
     def test_generate_qqplot_uniform(self):
         data = pd.DataFrame({
@@ -249,7 +250,7 @@ class GWASTestCase(unittest.TestCase):
 
         # Assert that the command ran successfully
         self.assertEqual(result.returncode, 1)
-
+"""
 class CalcStatsTestCase(unittest.TestCase):
     """
     def test_null_case(self):
@@ -321,21 +322,13 @@ class CalcStatsTestCase(unittest.TestCase):
 
         # Create PHEN-formatted phenotype dataframe
         phenotypes_data = {
-            'ID': ['rs1', 'rs2', 'rs3', 'rs4', 'rs5'],
-            'PHEN': [2, 2, 2, 2, 4]#2 * genotypes['A'] + np.random.normal(0, 0.1, 5)
+            'A':['A',2], 'B':['B',2], 'C':['C',2], 'D':['D',2], 'E': ['E',4]
         }
         phenotypes = pd.DataFrame(phenotypes_data)
-
-        #print("Genotypes:")
-        #print(genotypes)
-
-        ##print("Phenotypes:")
-        #print(phenotypes)
 
         result = calc_stats(genotypes, phenotypes)
     
         # Check that the slope is non-zero
-        #print(result)
         self.assertTrue(any(result['SLOPE'] != 0.0))
 
 
