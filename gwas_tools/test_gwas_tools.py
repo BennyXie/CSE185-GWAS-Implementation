@@ -8,13 +8,14 @@ import os.path
 import unittest
 import subprocess
 import shutil
+import random
 #from gwas_tools import *
 from gwas_tools.gwas_tools import *
 
 if os.path.exists("./test_temp"):
     shutil.rmtree("./test_temp")
 os.mkdir("./test_temp")
-"""
+
 class TestPlots(unittest.TestCase):
     def test_generate_qqplot_uniform(self):
         data = pd.DataFrame({
@@ -250,58 +251,43 @@ class GWASTestCase(unittest.TestCase):
 
         # Assert that the command ran successfully
         self.assertEqual(result.returncode, 1)
-"""
+
 class CalcStatsTestCase(unittest.TestCase):
-    """
     def test_null_case(self):
-        # Generate fixed set of random numbers for genotypes and phenotypes
-        genotypes = pd.DataFrame({'Genotype': [1, 2, 3]})
-        phenotypes = pd.DataFrame({'Phenotype': [4, 5, 6]})
-
-        expected_output = pd.DataFrame({
-            'Genotype': [1, 2, 3],
-            'SLOPE': [np.nan, np.nan, np.nan],
-            'INTERCEPT': [np.nan, np.nan, np.nan],
-            'RVALUE': [np.nan, np.nan, np.nan],
-            'PVALUE': [np.nan, np.nan, np.nan],
-            'STDERR': [np.nan, np.nan, np.nan]
-        })
-
-        result = calc_stats(genotypes, phenotypes)
-        self.assertTrue(result.equals(expected_output))
-    """
-
-    def test_slope_case(self):
-        # Generate random numbers for genotypes and phenotypes with a correlation
-        np.random.seed(42)
-        """
-        # Create VCF-formatted genotype dataframe
         genotype_data = {
             'CHROM': [1, 1, 1, 1, 1],
             'POS': [1, 2, 3, 4, 5],
             'ID': ['rs1', 'rs2', 'rs3', 'rs4', 'rs5'],
-            'REF': ['A', 'C', 'A', 'A', 'T'],
-            'ALT': ['C', 'A', 'C', 'G', 'C'],
-            'QUAL': [np.nan, np.nan, np.nan, np.nan, np.nan],
-            'FILTER': [np.nan, np.nan, np.nan, np.nan, np.nan],
+            'REF': ['A', 'A', 'A', 'A', 'A'],
+            'ALT': ['C', 'C', 'C', 'C', 'C'],
+            'QUAL': ['.', '.', '.', '.', '.'],
+            'FILTER': ['.', '.', '.', '.', '.'],
             'INFO': ['.', '.', '.', '.', '.'],
             'FORMAT': ['GT', 'GT', 'GT', 'GT', 'GT'],
-            'A': [1, 1, 1, 1, 2],
-            'B': [3, 1, 1, 1, 2],
-            'C': [3, 2, 1, 1, 2],
-            'D': [3, 2, 3, 1, 2],
-            'E': [3, 2, 3, 2, 1],
+            'A': [random.randint(1, 3) for _ in range(5)],
+            'B': [random.randint(1, 3) for _ in range(5)],
+            'C': [random.randint(1, 3) for _ in range(5)],
+            'D': [random.randint(1, 3) for _ in range(5)],
+            'E': [random.randint(1, 3) for _ in range(5)],
         }
         genotypes = pd.DataFrame(genotype_data)
 
         # Create PHEN-formatted phenotype dataframe
         phenotypes_data = {
-            'ID': ['rs1', 'rs2', 'rs3', 'rs4', 'rs5'],
-            'PHEN': [3,2,1,1,2]
+            'A': ['A', random.randint(1, 10)],
+            'B': ['B', random.randint(1, 10)],
+            'C': ['C', random.randint(1, 10)],
+            'D': ['D', random.randint(1, 10)],
+            'E': ['E', random.randint(1, 10)]
         }
-
         phenotypes = pd.DataFrame(phenotypes_data)
-        """
+        result = calc_stats(genotypes, phenotypes)
+    
+        self.assertTrue(sum(result['SLOPE'])<1 and sum(result['SLOPE'])>-1)
+
+
+    def test_slope_case(self):
+        # Generate random numbers for genotypes and phenotypes with a correlation
         genotype_data = {
             'CHROM': [1, 1, 1, 1, 1],
             'POS': [1, 2, 3, 4, 5],
@@ -327,7 +313,7 @@ class CalcStatsTestCase(unittest.TestCase):
         phenotypes = pd.DataFrame(phenotypes_data)
 
         result = calc_stats(genotypes, phenotypes)
-    
+
         # Check that the slope is non-zero
         self.assertTrue(any(result['SLOPE'] != 0.0))
 
