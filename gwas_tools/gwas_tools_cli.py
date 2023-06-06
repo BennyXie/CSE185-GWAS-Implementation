@@ -84,7 +84,7 @@ def main():
             exit(0)
         try:
             run_gwas(pheno, geno, args.out, args.maf, args.mac, threads)
-        except ValueError:
+        except InvalidFilterError:
             print("Invalid input, likely to be malformed maf or mac value.") #TODO: This may ignore some errors and print incorrect message
             parser.print_help()
             exit(-1)

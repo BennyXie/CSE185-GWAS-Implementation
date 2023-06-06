@@ -14,6 +14,8 @@ class InvalidFileFormatError(Exception):
 class GenoPhenoMismatch(Exception):
     pass
 
+class InvalidFilterError(Exception):
+    pass
 
 def read_geno(vcf_file: str):
     """
@@ -146,9 +148,9 @@ def generate_manhattan_plot(geno_with_stats: pd.DataFrame, out=None):
     :param geno_with_stats: p-value data and chromosome data (DataFrame)
     """
     if 'PVALUE' not in geno_with_stats.columns:
-        raise ValueError("Input DataFrame should contain a 'PVALUE' column.")
+        raise InvalidFilterError("Input DataFrame should contain a 'PVALUE' column.")
     if 'CHROM' not in geno_with_stats.columns:
-        raise ValueError("Input DataFrame should contain a '#CHROM' column.")
+        raise InvalidFilterError("Input DataFrame should contain a 'CHROM' column.")
     p_values = geno_with_stats['PVALUE']
     chromosome_data = geno_with_stats['CHROM']
 
@@ -268,19 +270,11 @@ def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame, threads: int =
 
     return genotypes
 
-
-def filter_maf_mac(geno: pd.DataFrame, maf: float = 0, mac: int = 0):
-    if maf < 0 or maf > 1:
-        raise ValueError("maf must be between 0 and 1")
-    if mac < 0:
-        raise ValueError("mac filter only accepts positive number of minor alleles")
-    # create a freq df which only contains the genotypes
-    total_allele_count = (geno.shape[1] - 9) * 2
-    drop = []
-    for index, row in geno.iterrows():
+def filter_maf_mac(geno: pd.DataFrame, maf: float = 0, mac: int = 0, threads: int = 1):
+    def process_row(row: np.ndarray, maf, mac, total_allele_count):
         allele_count = [0, 0]
         for i in [1, 2, 3]:
-            count = row.iloc[9:].isin([i]).sum()
+            count = np.count_nonzero(row == i)
             if i == 1:
                 allele_count[0] += count * 2
             elif i == 2:
@@ -290,13 +284,26 @@ def filter_maf_mac(geno: pd.DataFrame, maf: float = 0, mac: int = 0):
                 allele_count[1] += count * 2
 
         if min(allele_count[0], allele_count[1]) / total_allele_count < maf:
-            drop.append(index)
+            return True
         if min(allele_count[0], allele_count[1]) < mac:
-            drop.append(index)
-    geno.drop(drop, inplace=True)
+            return True
+        return False
+
+    if maf < 0 or maf > 1:
+        raise ValueError("maf must be between 0 and 1")
+    if mac < 0:
+        raise ValueError("mac filter only accepts positive number of minor alleles")
+
+    total_allele_count = (geno.shape[1] - 9) * 2
+    with ThreadPoolExecutor(max_workers=threads) as executor:
+        rows = [row[9:] for row in geno.values]
+        maf = [maf for i in range(len(rows))]
+        mac = [mac for i in range(len(rows))]
+        total_allele_count = [total_allele_count for i in range(len(rows))]
+        results = list(executor.map(process_row, rows, maf , mac, total_allele_count))
+    drop = [not result for result in results]
+    geno = geno[drop]
     return geno
-
-
 def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None, maf=None, mac=None, threads: int = 1):
     """
     Run GWAS analysis on phenotypes and genotypes
@@ -308,11 +315,11 @@ def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None,
     :return: vcf data and statistics of linear regression
     """
     if mac is not None and maf is not None:
-        filter_maf_mac(genotypes, maf, mac)
+        filter_maf_mac(genotypes, maf, mac, threads)
     elif maf is not None:
-        genotypes = filter_maf_mac(genotypes, maf=maf)
+        genotypes = filter_maf_mac(genotypes, maf=maf, threads=threads)
     elif mac is not None:
-        genotypes = filter_maf_mac(genotypes, mac)
+        genotypes = filter_maf_mac(genotypes, mac, threads)
     # calculate statistics
     geno_with_stats = calc_stats(genotypes, phenotypes, threads)
     # write statistics to file
