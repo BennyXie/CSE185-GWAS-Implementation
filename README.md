@@ -17,7 +17,7 @@ pip install . # For user installation, add --user
 ## Usage
 
 ```bash
-usage: gwas_tools-cli [-h] --pheno PHENO --geno GENO --out OUT [--maf MAF] [--mac MAC] [--version] [--debug] [--threads THREADS]
+usage: gwas_tools-cli [-h] --pheno PHENO --geno GENO --out OUT [--maf MAF] [--mac MAC] [--version] [--debug] [--threads THREADS] [--process]
 
 Perform GWAS analysis on phenotypes and genotypes.
 
@@ -33,6 +33,7 @@ options:
   --debug               Print debug messages
   --threads THREADS, -t THREADS
                         Number of threads to use
+  --process             Use process instead of thread, faster but more memory usage
 ```
 
 ## Report Error

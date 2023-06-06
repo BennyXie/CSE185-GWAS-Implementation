@@ -17,7 +17,7 @@ def main():
     parser.add_argument('--version', action='version', version='gwas_tools ' + __version__)
     parser.add_argument('--debug', action='store_true', help='Print debug messages')
     parser.add_argument('--threads', '-t', type=int, help='Number of threads to use')
-    parser.add_argument('--process', action='store_true', help='Use process instead of thread')
+    parser.add_argument('--process', action='store_true', help='Use process instead of thread, significantly increase memory usage but may be faster (10~30%)')
     args = parser.parse_args()
     if args.pheno == '-h' or args.geno == '-h' or args.out == '-h':
         parser.print_help()

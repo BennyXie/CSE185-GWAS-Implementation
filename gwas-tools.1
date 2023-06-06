@@ -6,7 +6,7 @@ NAME
 SYNOPSIS
        gwas-tools [--pheno <phenotypes.csv>] [--geno <genotypes.vcf>]
                   [--out <output_directory>] [--maf <min_maf>]
-                  [--count <sample_count>] [--help] [--version]
+                  [--count <sample_count>] [--help] [--version] [--debug] [--threads <thread_count>] [--process]
 
 DESCRIPTION
        The gwas-tools command-line tool performs GWAS (Genome-Wide Association
@@ -17,7 +17,7 @@ DESCRIPTION
 OPTIONS
        --pheno, -p <phenotypes.csv>
               Specify the CSV file containing phenotypes. The first column
-              must be sample ID and the second column must be numeric
+              must be sample ID, and the second column must be numeric
               phenotype measurements.
 
        --geno, -g <genotypes.vcf>
@@ -39,30 +39,38 @@ OPTIONS
        --version
               Display the version information.
 
+       --debug
+              Print debug messages.
+
+       --threads, -t <thread_count>
+              (Optional) Specify the number of threads to use.
+
+       --process
+              (Optional) Use the process instead of thread, which is faster but requires more memory.
+
 EXAMPLES
        Perform GWAS analysis on phenotypes and genotypes:
               gwas-tools --pheno phenotypes.csv --geno genotypes.vcf
               --out .
 
 AUTHOR
-       Your Name
+       Yifei Ding
 
 REPORTING BUGS
-       Report bugs to: <email@example.com>
+       Report bugs to: yifeiding@protonmail.com
 
 COPYRIGHT
-       Copyright © 2023 Your Name.
+       Copyright © 2023 Yifei Ding
 
 SEE ALSO
        More information about GWAS can be found at the following link:
        <https://en.wikipedia.org/wiki/Genome-wide_association_study>
 
 NOTES
-       This tool requires Python 3.10 and the following dependencies: ...
+       This tool requires Python 3.10 or newer.
 
 BUGS
-       It's broken
+         No known bugs.
 
 VERSION
-       gwas-tools version 1.0.0
-
+       gwas-tools version 0.10
