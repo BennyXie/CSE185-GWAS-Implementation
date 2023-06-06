@@ -233,8 +233,8 @@ def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame, threads: int =
             'STDERR': results.bse[0]
         }
     
-    genotypes = genotypes.dropna()
-    phenotypes = phenotypes.dropna()
+    genotypes = genotypes.dropna().copy()
+    phenotypes = phenotypes.dropna().copy()
     common_columns = list(set(genotypes.columns) & set(phenotypes.columns))
     genotypes_matched = genotypes[common_columns]
     phenotypes_matched = phenotypes[common_columns]
@@ -257,11 +257,14 @@ def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame, threads: int =
             pvalues.append(result['PVALUE'])
             stderrs.append(result['STDERR'])
 
-    genotypes['SLOPE'] = pd.Series(slopes)
-    genotypes['INTERCEPT'] = pd.Series(intercepts)
-    genotypes['RVALUE'] = pd.Series(rvalues)
-    genotypes['PVALUE'] = pd.Series(pvalues)
-    genotypes['STDERR'] = pd.Series(stderrs)
+    genotypes = genotypes.assign(
+        SLOPE=pd.Series(slopes),
+        INTERCEPT=pd.Series(intercepts),
+        RVALUE=pd.Series(rvalues),
+        PVALUE=pd.Series(pvalues),
+        STDERR=pd.Series(stderrs)
+    )
+
     return genotypes
 
 
