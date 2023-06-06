@@ -102,6 +102,11 @@ class TestPlots(unittest.TestCase):
         # Assert that no errors occurred during the plot generation
         self.assertTrue(os.path.isfile(file_name))
 
+    def test_real_stats_manhattan_plot(self):
+        file_name = "./test_temp/manhattan-plot-3.png"
+        df = pd.read_csv('./testfiles/teststats.csv', sep='\t')
+        generate_manhattan_plot(df, file_name)
+        self.assertTrue(os.path.isfile(file_name))
 
 class TestReadGeno(unittest.TestCase):
     def test_read_vcf_single_id(self):
