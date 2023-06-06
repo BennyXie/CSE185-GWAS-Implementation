@@ -118,7 +118,8 @@ def generate_qqplot(data: pd.DataFrame, out: str = None):
     expected_neglogp = -np.log10(np.random.uniform(0, 1, num_pvalues))
     expected_neglogp = np.sort(expected_neglogp)
     # Calculate observed -log10(p) values
-    observed_neglogp = -np.log10(data['PVALUE'])
+    pvalues = data['PVALUE'].values
+    observed_neglogp = np.where(pvalues != 0, -np.log10(pvalues), 0)
     observed_neglogp = np.sort(observed_neglogp)
 
     # Create a new DataFrame with observed and expected -log10(p) values- might have to generate expected values (?)
@@ -155,7 +156,7 @@ def generate_manhattan_plot(geno_with_stats: pd.DataFrame, out=None):
     chromosome_data = geno_with_stats['CHROM']
 
     # Calculate -log10(p) values
-    p_values = -np.log10(p_values)
+    p_values = np.where(p_values != 0, -np.log10(p_values), 0)
 
     sorted_indices = np.argsort(chromosome_data)
     sorted_chromosome_data = np.array(chromosome_data)[sorted_indices]
@@ -209,7 +210,7 @@ def write_stats(genotypes_with_stats: pd.DataFrame, out: str):
     output_df.to_csv(out, sep="\t", index=False)
 
 def __calc_row_stats(row:np.array, y:np.array):
-        x = row  # Exclude the first column
+        x = row  # Exclude th first column
         X = sm.add_constant(x)
         model = sm.OLS(y, X)
         results = model.fit()
