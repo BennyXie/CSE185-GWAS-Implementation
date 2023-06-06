@@ -235,9 +235,10 @@ def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame, threads: int =
     
     genotypes = genotypes.dropna().copy()
     phenotypes = phenotypes.dropna().copy()
-    common_columns = list(set(genotypes.columns) & set(phenotypes.columns))
+    common_columns = genotypes.columns.intersection(phenotypes.columns)
     genotypes_matched = genotypes[common_columns]
     phenotypes_matched = phenotypes[common_columns]
+
     # Convert to numpy arrays
     genotypes_arr = genotypes_matched.values
     y = phenotypes_matched.iloc[1].to_numpy()
