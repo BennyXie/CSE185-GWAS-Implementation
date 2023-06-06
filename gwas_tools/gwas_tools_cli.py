@@ -17,6 +17,7 @@ def main():
     parser.add_argument('--version', action='version', version='gwas_tools ' + __version__)
     parser.add_argument('--debug', action='store_true', help='Print debug messages')
     parser.add_argument('--threads', '-t', type=int, help='Number of threads to use')
+    parser.add_argument('--process', action='store_true', help='Use process instead of thread')
     args = parser.parse_args()
     if args.pheno == '-h' or args.geno == '-h' or args.out == '-h':
         parser.print_help()
@@ -62,7 +63,11 @@ def main():
         threads = 1
         if args.threads is not None:
             threads = args.threads
-        print("Using " + str(threads) + " threads.")
+        if args.process:
+            multitask = "process"
+        else:
+            multitask = "thread"
+        print("Using " + str(threads) + " " + multitask +".")
 
         # read genotype file
         print("Reading genotype file...")

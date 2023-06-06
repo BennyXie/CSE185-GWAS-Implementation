@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import datetime
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
-
+__MULTIPROCESSING__ = ThreadPoolExecutor
 class InvalidFileFormatError(Exception):
     pass
 
@@ -208,12 +208,19 @@ def write_stats(genotypes_with_stats: pd.DataFrame, out: str):
 
     output_df.to_csv(out, sep="\t", index=False)
 
-def __calc_row_stats(row, y):
+def __calc_row_stats(row:np.array, y:np.array):
         x = row  # Exclude the first column
         X = sm.add_constant(x)
         model = sm.OLS(y, X)
         results = model.fit()
-
+        if np.count_nonzero(x == x[0]) == len(x):
+            return {
+                'SLOPE': 0,
+                'INTERCEPT': 0,
+                'RVALUE': results.rsquared,
+                'PVALUE': results.f_pvalue,
+                'STDERR': results.bse[0]
+            }
         return {
             'SLOPE': results.params[1],
             'INTERCEPT': results.params[0],
@@ -245,29 +252,31 @@ def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame, threads: int =
     # Convert to numpy arrays
     genotypes_arr = genotypes_matched.values
     y = phenotypes_matched.iloc[1].to_numpy()
-    slopes = []
-    intercepts = []
-    rvalues = []
-    pvalues = []
-    stderrs = []
-    # calculate the statistics
-    with ProcessPoolExecutor(max_workers=threads) as executor:
-        results = executor.map(__calc_row_stats, genotypes_arr, [y] * len(genotypes_arr))
+    if np.count_nonzero(y == y[0]) != len(y):
 
-        for result in results:
-            slopes.append(result['SLOPE'])
-            intercepts.append(result['INTERCEPT'])
-            rvalues.append(result['RVALUE'])
-            pvalues.append(result['PVALUE'])
-            stderrs.append(result['STDERR'])
+        slopes = []
+        intercepts = []
+        rvalues = []
+        pvalues = []
+        stderrs = []
+        # calculate the statistics
+        with __MULTIPROCESSING__(max_workers=threads) as executor:
+            results = executor.map(__calc_row_stats, genotypes_arr, [y] * len(genotypes_arr))
 
-    genotypes = genotypes.assign(
-        SLOPE=pd.Series(slopes),
-        INTERCEPT=pd.Series(intercepts),
-        RVALUE=pd.Series(rvalues),
-        PVALUE=pd.Series(pvalues),
-        STDERR=pd.Series(stderrs)
-    )
+            for result in results:
+                    slopes.append(result['SLOPE'])
+                    intercepts.append(result['INTERCEPT'])
+                    rvalues.append(result['RVALUE'])
+                    pvalues.append(result['PVALUE'])
+                    stderrs.append(result['STDERR'])
+
+        genotypes = genotypes.assign(
+            SLOPE=pd.Series(slopes),
+            INTERCEPT=pd.Series(intercepts),
+            RVALUE=pd.Series(rvalues),
+            PVALUE=pd.Series(pvalues),
+            STDERR=pd.Series(stderrs)
+        )
 
     return genotypes
 
@@ -289,15 +298,13 @@ def __filter_row(row: np.ndarray, maf, mac, total_allele_count):
             return True
         return False
 def filter_maf_mac(geno: pd.DataFrame, maf: float = 0, mac: int = 0, threads: int = 1):
-
-
     if maf < 0 or maf > 1:
         raise ValueError("maf must be between 0 and 1")
     if mac < 0:
         raise ValueError("mac filter only accepts positive number of minor alleles")
 
     total_allele_count = (geno.shape[1] - 9) * 2
-    with ProcessPoolExecutor(max_workers=threads) as executor:
+    with __MULTIPROCESSING__(max_workers=threads) as executor:
         rows = [row[9:] for row in geno.values]
         maf = [maf for i in range(len(rows))]
         mac = [mac for i in range(len(rows))]
@@ -306,7 +313,7 @@ def filter_maf_mac(geno: pd.DataFrame, maf: float = 0, mac: int = 0, threads: in
     drop = [not result for result in results]
     geno = geno[drop]
     return geno
-def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None, maf=None, mac=None, threads: int = 1):
+def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None, maf=None, mac=None, threads: int = 1, process = False):
     """
     Run GWAS analysis on phenotypes and genotypes
     :param phenotypes: phenotype file
@@ -316,6 +323,8 @@ def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None,
     :param mac: minimum sample count
     :return: vcf data and statistics of linear regression
     """
+    if process == True:
+        __MULTIPROCESSING__ = ProcessPoolExecutor
     print("Running GWAS")
     # filter genotypes
     print("Filtering genotypes")
