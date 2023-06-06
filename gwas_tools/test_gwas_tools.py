@@ -62,6 +62,7 @@ class TestPlots(unittest.TestCase):
         data = pd.DataFrame({
             'CHROM': np.random.randint(1, 10, size=1000), 'PVALUE': np.random.uniform(0, 1, 1000)
         })
+        data['POS'] = data['CHROM'] * 10000 + np.random.randint(1, 10000, size=1000)
 
         file_name = "./test_temp/manhattan-plot-0.png"
         # Call the generate_plot function
@@ -74,8 +75,10 @@ class TestPlots(unittest.TestCase):
         # Create example DataFrame
         data = pd.DataFrame({
             'PVALUE': np.random.uniform(0, 1, 1000),
-            'CHROM': np.random.randint(1, 20, size=1000)
+            'CHROM': np.random.randint(1, 20, size=1000),
         })
+
+        data['POS'] = data['CHROM'] * 10000 + np.random.randint(1, 10000, size=1000)
 
         file_name = "./test_temp/manhattan-plot-1.png"
         # Call the generate_plot function
@@ -90,6 +93,7 @@ class TestPlots(unittest.TestCase):
             'PVALUE': np.random.uniform(0, 1, 10000),
             'CHROM': np.random.randint(1, 8, size=10000)
         })
+        data['POS'] = data['CHROM'] * 10000 + np.random.randint(1, 10000, size=10000)
 
         file_name = "./test_temp/manhattan-plot-2.png"
         # Call the generate_plot function

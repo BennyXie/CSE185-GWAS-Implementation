@@ -154,37 +154,47 @@ def generate_manhattan_plot(geno_with_stats: pd.DataFrame, out=None):
     if 'CHROM' not in geno_with_stats.columns:
         raise InvalidFilterError("Input DataFrame should contain a 'CHROM' column.")
     p_values = geno_with_stats['PVALUE'].values.astype(float)
-    chromosome_data = geno_with_stats['CHROM']
-
+    chromosome_data = geno_with_stats['CHROM'].values.astype(int)
+    positions = geno_with_stats['POS'].values.astype(int)
     # Calculate -log10(p) values
     p_values = -np.log10(p_values)
-    sorted_indices = np.argsort(chromosome_data)
-    sorted_chromosome_data = np.array(chromosome_data)[sorted_indices]
+    sorted_indices = np.argsort(positions)
+    sorted_chromosome_data = chromosome_data[sorted_indices]
     sorted_p_values = p_values[sorted_indices]
-
-    # unique_chromosomes = sorted_chromosome_data.unique()
+    sorted_positions = positions[sorted_indices]
+    unique_chromosomes = sorted(geno_with_stats['CHROM'].unique())
     colors = {0: 'brown', 1: 'red', 2: 'orange', 3: 'yellow', 4: 'green', 5: 'blue', 6: 'purple', 7: 'pink', 8: 'gray',
               9: 'indigo'}
 
-    x_ticks = []
-    x_tick_labels = []
-    prev_chrom = None
+    assigned_colors = []
+    for chrom in sorted_chromosome_data:
+        assigned_colors.append(colors.get(chrom % 10, 'black'))
 
-    for i, chrom in enumerate(sorted_chromosome_data):
-        if prev_chrom is None or chrom != prev_chrom:
-            x_ticks.append(i)
-            x_tick_labels.append(str(chrom))
-            prev_chrom = chrom
+    # Calculate the positions of the chromosome labels
+    chrom_pos = []
+    for i in unique_chromosomes:
+        low = np.where(sorted_chromosome_data == i)[0][0]
+        high = np.where(sorted_chromosome_data == i)[-1][-1]
+        low_pos = sorted_positions[low]
+        high_pos = sorted_positions[high]
+        for j in range(low, high+1):
+            chrom_pos.append(i + (sorted_positions[j]-low_pos)/(high_pos-low_pos) - 0.5)
 
-        plt.plot(i, sorted_p_values[i], 'o', color=colors.get(chrom % 10, 'black'), alpha=0.5)
 
-    plt.axhline(-np.log10(0.05), color='red', linestyle='--')
-    plt.xlabel('Chromosome')
-    plt.ylabel('-log10(p-value)')
-    plt.title('Manhattan Plot')
-    plt.xticks(x_ticks, x_tick_labels)
+    fig, ax = plt.subplots()
+
+    ax.scatter(chrom_pos, sorted_p_values, c=assigned_colors, alpha=0.5, s=10, marker='s')
+
+    ax.axhline(-np.log10(0.05), color='red', linestyle='--')
+    ax.set_xlim(0, max(chromosome_data) + 1)
+    ax.set_xticks(unique_chromosomes)
+    ax.set_xticklabels(unique_chromosomes)
+
+    ax.set_xlabel('Chromosome')  # Use 'set_xlabel' instead of 'set_x_label'
+    ax.set_ylabel('-log10(p-value)')  # Use 'set_ylabel' instead of 'set_y_label'
+    ax.set_title('Manhattan Plot')
     if out is not None:
-        plt.savefig(out)
+        fig.savefig(out)
     else:
         plt.show()
 
