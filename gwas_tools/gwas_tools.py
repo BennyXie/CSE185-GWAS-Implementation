@@ -198,7 +198,7 @@ def generate_manhattan_plot(geno_with_stats: pd.DataFrame, out=None):
     if out is not None:
         fig.savefig(out)
     else:
-        plt.show()
+        fig.show()
 
 
 def write_stats(genotypes_with_stats: pd.DataFrame, out: str):
