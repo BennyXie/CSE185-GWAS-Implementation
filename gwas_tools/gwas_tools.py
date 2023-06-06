@@ -150,9 +150,11 @@ def generate_manhattan_plot(geno_with_stats: pd.DataFrame, out=None):
     :param geno_with_stats: p-value data and chromosome data (DataFrame)
     """
     if 'PVALUE' not in geno_with_stats.columns:
-        raise InvalidFilterError("Input DataFrame should contain a 'PVALUE' column.")
+        raise ValueError("Input DataFrame should contain a 'PVALUE' column.")
     if 'CHROM' not in geno_with_stats.columns:
-        raise InvalidFilterError("Input DataFrame should contain a 'CHROM' column.")
+        raise ValueError("Input DataFrame should contain a 'CHROM' column.")
+    if 'POS' not in geno_with_stats.columns:
+        raise ValueError("Input DataFrame should contain a 'POS' column.")
     p_values = geno_with_stats['PVALUE'].values.astype(float)
     chromosome_data = geno_with_stats['CHROM'].values.astype(int)
     positions = geno_with_stats['POS'].values.astype(int)
