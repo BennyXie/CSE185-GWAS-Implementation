@@ -113,6 +113,7 @@ def generate_qqplot(data: pd.DataFrame, out: str = None):
     """
     if 'PVALUE' not in data.columns:
         raise ValueError("Input DataFrame should contain a 'pvalues' column.")
+    data.dropna(inplace=True)
 
     num_pvalues = len(data)
     expected_neglogp = -np.log10(np.random.uniform(0, 1, num_pvalues))
@@ -152,15 +153,14 @@ def generate_manhattan_plot(geno_with_stats: pd.DataFrame, out=None):
         raise InvalidFilterError("Input DataFrame should contain a 'PVALUE' column.")
     if 'CHROM' not in geno_with_stats.columns:
         raise InvalidFilterError("Input DataFrame should contain a 'CHROM' column.")
-    p_values = geno_with_stats['PVALUE']
+    p_values = geno_with_stats['PVALUE'].values.astype(float)
     chromosome_data = geno_with_stats['CHROM']
 
     # Calculate -log10(p) values
-    p_values = np.where(p_values != 0, -np.log10(p_values), 0)
-
+    p_values = -np.log10(p_values)
     sorted_indices = np.argsort(chromosome_data)
     sorted_chromosome_data = np.array(chromosome_data)[sorted_indices]
-    sorted_p_values = np.array(p_values)[sorted_indices]
+    sorted_p_values = p_values[sorted_indices]
 
     # unique_chromosomes = sorted_chromosome_data.unique()
     colors = {0: 'brown', 1: 'red', 2: 'orange', 3: 'yellow', 4: 'green', 5: 'blue', 6: 'purple', 7: 'pink', 8: 'gray',
@@ -206,7 +206,7 @@ def write_stats(genotypes_with_stats: pd.DataFrame, out: str):
         "PVALUE": genotypes_with_stats["PVALUE"],
         "STDERR": genotypes_with_stats["STDERR"]
     })
-
+    output_df.dropna(inplace=True)
     output_df.to_csv(out, sep="\t", index=False)
 
 def __calc_row_stats(row:np.array, y:np.array):
@@ -343,10 +343,15 @@ def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None,
     print("Writing statistics to file")
     if out is not None:
         write_stats(geno_with_stats, out + current_time + "stats.csv")
-    # plot manhattan plot
-    generate_manhattan_plot(geno_with_stats, out + current_time + "manhattan-plot.png")
-    # plot qq plot
-    generate_qqplot(geno_with_stats, out + current_time + "qq-plot.png")
+        # plot manhattan plot
+        generate_manhattan_plot(geno_with_stats, out + current_time + "manhattan-plot.png")
+        # plot qq plot
+        generate_qqplot(geno_with_stats, out + current_time + "qq-plot.png")
+    else:
+        # plot manhattan plot
+        generate_manhattan_plot(geno_with_stats)
+        # plot qq plot
+        generate_qqplot(geno_with_stats)
     return geno_with_stats
 
 
