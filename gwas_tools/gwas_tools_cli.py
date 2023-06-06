@@ -59,7 +59,13 @@ def main():
             parser.print_help()
             exit(-1)
 
+        threads = 1
+        if args.threads is not None:
+            threads = args.threads
+        print("Using " + str(threads) + " threads.")
+
         # read genotype file
+        print("Reading genotype file...")
         try :
             geno = read_geno(args.geno)
         except InvalidFileFormatError:
@@ -67,16 +73,13 @@ def main():
             parser.print_help()
             exit(-1)
         # read phenotype file
+        print("Reading phenotype file...")
         try:
             pheno = read_pheno(args.pheno)
         except InvalidFileFormatError:
             print("Invalid phenotype file. It must be a CSV file with the first column being sample ID and the second column being numeric phenotype measurements.")
             parser.print_help()
             exit(-1)
-
-        threads = 1
-        if args.threads is not None:
-            threads = args.threads
 
         # run GWAS
         if args.debug:

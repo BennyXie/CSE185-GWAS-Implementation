@@ -4,7 +4,7 @@ import numpy as np
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
 import datetime
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 
 class InvalidFileFormatError(Exception):
@@ -208,6 +208,19 @@ def write_stats(genotypes_with_stats: pd.DataFrame, out: str):
 
     output_df.to_csv(out, sep="\t", index=False)
 
+def __calc_row_stats(row, y):
+        x = row  # Exclude the first column
+        X = sm.add_constant(x)
+        model = sm.OLS(y, X)
+        results = model.fit()
+
+        return {
+            'SLOPE': results.params[1],
+            'INTERCEPT': results.params[0],
+            'RVALUE': results.rsquared,
+            'PVALUE': results.f_pvalue,
+            'STDERR': results.bse[0]
+        }
 
 def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame, threads: int = 1):
     """
@@ -221,19 +234,7 @@ def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame, threads: int =
     # create a copy of the genotypes dataframe to store the genotypes with statistics
     # add debug flag
 
-    def calc_row_stats(row):
-        x = row  # Exclude the first column
-        X = sm.add_constant(x)
-        model = sm.OLS(y, X)
-        results = model.fit()
 
-        return {
-            'SLOPE': results.params[1],
-            'INTERCEPT': results.params[0],
-            'RVALUE': results.rsquared,
-            'PVALUE': results.f_pvalue,
-            'STDERR': results.bse[0]
-        }
     
     genotypes = genotypes.dropna().copy()
     phenotypes = phenotypes.dropna().copy()
@@ -250,8 +251,8 @@ def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame, threads: int =
     pvalues = []
     stderrs = []
     # calculate the statistics
-    with ThreadPoolExecutor(max_workers=threads) as executor:
-        results = executor.map(calc_row_stats, genotypes_arr)
+    with ProcessPoolExecutor(max_workers=threads) as executor:
+        results = executor.map(__calc_row_stats, genotypes_arr, [y] * len(genotypes_arr))
 
         for result in results:
             slopes.append(result['SLOPE'])
@@ -270,8 +271,7 @@ def calc_stats(genotypes: pd.DataFrame, phenotypes: pd.DataFrame, threads: int =
 
     return genotypes
 
-def filter_maf_mac(geno: pd.DataFrame, maf: float = 0, mac: int = 0, threads: int = 1):
-    def process_row(row: np.ndarray, maf, mac, total_allele_count):
+def __filter_row(row: np.ndarray, maf, mac, total_allele_count):
         allele_count = [0, 0]
         for i in [1, 2, 3]:
             count = np.count_nonzero(row == i)
@@ -288,6 +288,8 @@ def filter_maf_mac(geno: pd.DataFrame, maf: float = 0, mac: int = 0, threads: in
         if min(allele_count[0], allele_count[1]) < mac:
             return True
         return False
+def filter_maf_mac(geno: pd.DataFrame, maf: float = 0, mac: int = 0, threads: int = 1):
+
 
     if maf < 0 or maf > 1:
         raise ValueError("maf must be between 0 and 1")
@@ -295,12 +297,12 @@ def filter_maf_mac(geno: pd.DataFrame, maf: float = 0, mac: int = 0, threads: in
         raise ValueError("mac filter only accepts positive number of minor alleles")
 
     total_allele_count = (geno.shape[1] - 9) * 2
-    with ThreadPoolExecutor(max_workers=threads) as executor:
+    with ProcessPoolExecutor(max_workers=threads) as executor:
         rows = [row[9:] for row in geno.values]
         maf = [maf for i in range(len(rows))]
         mac = [mac for i in range(len(rows))]
         total_allele_count = [total_allele_count for i in range(len(rows))]
-        results = list(executor.map(process_row, rows, maf , mac, total_allele_count))
+        results = list(executor.map(__filter_row, rows, maf , mac, total_allele_count))
     drop = [not result for result in results]
     geno = geno[drop]
     return geno
@@ -314,6 +316,9 @@ def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None,
     :param mac: minimum sample count
     :return: vcf data and statistics of linear regression
     """
+    print("Running GWAS")
+    # filter genotypes
+    print("Filtering genotypes")
     if mac is not None and maf is not None:
         filter_maf_mac(genotypes, maf, mac, threads)
     elif maf is not None:
@@ -321,10 +326,11 @@ def run_gwas(phenotypes: pd.DataFrame, genotypes: pd.DataFrame, out: str = None,
     elif mac is not None:
         genotypes = filter_maf_mac(genotypes, mac, threads)
     # calculate statistics
+    print("Calculating statistics")
     geno_with_stats = calc_stats(genotypes, phenotypes, threads)
     # write statistics to file
     current_time = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S-")
-
+    print("Writing statistics to file")
     if out is not None:
         write_stats(geno_with_stats, out + current_time + "stats.csv")
     # plot manhattan plot
