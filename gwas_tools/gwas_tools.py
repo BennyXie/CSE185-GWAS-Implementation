@@ -127,17 +127,15 @@ def generate_qqplot(data: pd.DataFrame, out: str = None):
     observed_neglogp = np.where(pvalues != 0, -np.log10(pvalues), 0)
     observed_neglogp = np.sort(observed_neglogp)
 
-    # Create a new DataFrame with observed and expected -log10(p) values- might have to generate expected values (?)
-    sorted_data = pd.DataFrame({'Expected -log10(p)': expected_neglogp,
-                                'Observed -log10(p)': observed_neglogp})
-
+    X = sm.add_constant(expected_neglogp)
+    model = sm.OLS(observed_neglogp, X)
+    results = model.fit()
+    x = np.linspace(min(expected_neglogp), max(expected_neglogp), len(expected_neglogp))
+    y = results.params[1] * x + results.params[0]
     # Plot the expected vs observed -log10(p) values
     plt.figure(figsize=(8, 6))
-    plt.scatter(sorted_data['Expected -log10(p)'], sorted_data['Observed -log10(p)'],
-                color='b', alpha=0.5)
-    plt.plot([min(sorted_data['Observed -log10(p)']), max(sorted_data['Observed -log10(p)'])],
-             [min(sorted_data['Observed -log10(p)']), max(sorted_data['Observed -log10(p)'])],
-             color='r', linestyle='--')
+    plt.scatter(expected_neglogp, observed_neglogp, color='b', alpha=0.5)
+    plt.plot(x,y,color='r', linestyle='--')
     plt.xlabel('Expected -log10(p)')
     plt.ylabel('Observed -log10(p)')
     plt.title('GWAS QQ Plot')
