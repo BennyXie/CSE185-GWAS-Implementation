@@ -50,13 +50,21 @@ class TestPlots(unittest.TestCase):
             'PVALUE': np.polyval(coefficients, x)
         })
 
-        file_name = "./test_temp/qq-plot-3.png"
+        file_name = "./test_temp/qq-plot-2.png"
         # Call the generate_plot function
         generate_qqplot(data, file_name)
 
         # Assert that no errors occurred during the plot generation
         self.assertTrue(os.path.isfile(file_name))
+    def test_generate_qqplot_real(self):
+        df = pd.read_csv('./testfiles/teststats.csv', sep='\t')
 
+        file_name = "./test_temp/qq-plot-3.png"
+        # Call the generate_plot function
+        generate_qqplot(df, file_name)
+
+        # Assert that no errors occurred during the plot generation
+        self.assertTrue(os.path.isfile(file_name))
     def test_generate_manhattan_plot(self):
         # Create example DataFrame
         data = pd.DataFrame({

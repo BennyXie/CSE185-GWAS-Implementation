@@ -4,7 +4,7 @@ import os
 from gwas_tools.__version__ import __version__
 
 def main():
-    parser = argparse.ArgumentParser(prog='gwas_tools-cli',
+    parser = argparse.ArgumentParser(prog='gwas-tools-cli',
                                      description='Perform GWAS analysis on phenotypes and genotypes.')
     parser.add_argument('--pheno', '-p', type=str, help='CSV file containing phenotypes. The first column must be \
         sample ID and the second column must be numeric phenotype measurements.', required=True)
@@ -14,7 +14,7 @@ def main():
     parser.add_argument('--maf', type=float,
                         help='Minimum minor allele frequency (between 0 and 1)')
     parser.add_argument('--mac', type=int, help='Minimum of minor allele count of a genotype')
-    parser.add_argument('--version', action='version', version='gwas_tools ' + __version__)
+    parser.add_argument('--version','-v', action='version', version='gwas-tools-cli ' + __version__)
     parser.add_argument('--debug', action='store_true', help='Print debug messages')
     parser.add_argument('--threads', '-t', type=int, help='Number of threads to use')
     parser.add_argument('--process', action='store_true', help='Use process instead of thread, significantly increase memory usage but may be faster (10~30%)')

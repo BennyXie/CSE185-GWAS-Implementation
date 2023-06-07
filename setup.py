@@ -20,7 +20,8 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "gwas-tools-cli=gwas_tools.gwas_tools_cli:main"
+            "gwas-tools-cli=gwas_tools.gwas_tools_cli:main",
+            "gwas-plots-cli=gwas_tools.gwas_plots_cli:main"
         ],
     },
 )
