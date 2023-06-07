@@ -11,7 +11,7 @@ def main():
     parser.add_argument('--out', '-o', type=str, help='Output filename for results', required=True)
     parser.add_argument('--manhattan', action='store_true', help='Plot manhattan plot')
     parser.add_argument('--qq', action='store_true', help='Plot QQ plot')
-    parser.add_argument('--cutoff', type=float, help='manhattan plot cutoff line')
+    parser.add_argument('--cutoff', type=float, help='manhattan plot cutoff line p-value')
     args = parser.parse_args()
     if args.input == '-h' or args.out == '-h':
         parser.print_help()
