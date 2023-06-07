@@ -126,9 +126,17 @@ def generate_qqplot(data: pd.DataFrame, out: str = None):
     pvalues = data['PVALUE'].values
     observed_neglogp = np.where(pvalues != 0, -np.log10(pvalues), 0)
     observed_neglogp = np.sort(observed_neglogp)
+    mean = np.mean(observed_neglogp)
+    std = np.std(observed_neglogp)
+    z_scores = (observed_neglogp - mean) / std
 
-    X = sm.add_constant(expected_neglogp)
-    model = sm.OLS(observed_neglogp, X)
+    outlier_threshold = 2
+    filtered_x = expected_neglogp[z_scores < outlier_threshold]
+    filtered_y = observed_neglogp[z_scores < outlier_threshold]
+
+    # Calculate the slope and intercept of the line of best fit
+    X = sm.add_constant(filtered_x)
+    model = sm.OLS(filtered_y, X)
     results = model.fit()
     x = np.linspace(min(expected_neglogp), max(expected_neglogp), len(expected_neglogp))
     y = results.params[1] * x + results.params[0]
