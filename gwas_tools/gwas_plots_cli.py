@@ -11,6 +11,7 @@ def main():
     parser.add_argument('--out', '-o', type=str, help='Output filename for results', required=True)
     parser.add_argument('--manhattan', action='store_true', help='Plot manhattan plot')
     parser.add_argument('--qq', action='store_true', help='Plot QQ plot')
+    parser.add_argument('--cutoff', type=float, help='manhattan plot cutoff line')
     args = parser.parse_args()
     if args.input == '-h' or args.out == '-h':
         parser.print_help()
@@ -19,7 +20,10 @@ def main():
         df = pd.read_csv(args.input, sep='\t')
         if args.manhattan:
             print("Plotting manhattan plot...")
-            generate_manhattan_plot(df, args.out)
+            cutoff = 0.05
+            if args.cutoff is not None:
+                cutoff = args.cutoff
+            generate_manhattan_plot(df, args.out, cutoff)
             exit(0)
         elif args.qq:
             print("Plotting QQ plot...")

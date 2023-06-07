@@ -145,7 +145,7 @@ def generate_qqplot(data: pd.DataFrame, out: str = None):
         plt.show()
 
 
-def generate_manhattan_plot(geno_with_stats: pd.DataFrame, out=None):
+def generate_manhattan_plot(geno_with_stats: pd.DataFrame, out:str = None, cutoff:float = 0.05):
     """
     Generate a Manhattan plot of the expected and observed -log10(p-values)
     :param out: output file path
@@ -191,7 +191,7 @@ def generate_manhattan_plot(geno_with_stats: pd.DataFrame, out=None):
 
     ax.scatter(chrom_pos, p_values, c=assigned_colors, alpha=0.5, s=50/len(unique_chromosomes), marker='s')
 
-    ax.axhline(-np.log10(0.05), color='red', linestyle='--')
+    ax.axhline(-np.log10(cutoff), color='red', linestyle='--')
     ax.set_xlim(0, max(chromosome) + 1)
     ax.set_xticks(unique_chromosomes)
     ax.set_xticklabels(unique_chromosomes)
