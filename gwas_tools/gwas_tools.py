@@ -170,13 +170,12 @@ def generate_manhattan_plot(geno_with_stats: pd.DataFrame, out:str = None, cutof
     chromosome = geno_with_stats['CHROM'].values.astype(int)[indices]
     unique_chromosomes = sorted(geno_with_stats['CHROM'].unique())
 
-    colors = {0: 'brown', 1: 'red', 2: 'orange', 3: 'yellow', 4: 'green', 5: 'blue', 6: 'purple', 7: 'pink', 8: 'gray',
-              9: 'indigo'}
+    colors = ['brown', 'red', 'orange', 'green', 'blue', 'purple', 'pink','gray', 'indigo']
 
     # Assign colors to chromosomes
     assigned_colors = []
     for chrom in chromosome:
-        assigned_colors.append(colors.get(chrom % 10, 'black'))
+        assigned_colors.append(colors[chrom % len(colors)])
 
     # Calculate the positions of the chromosome labels
     chrom_pos = [0]*len(chromosome)
